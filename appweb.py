@@ -533,7 +533,7 @@ desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader(f"Task {st.session_state.indice_atual + 1}/{len(desafios)}")
+    st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{len(desafios)}")
     st.markdown(f"### {desafio_atual['titulo']}")
     
     st.info("Instructions:")
