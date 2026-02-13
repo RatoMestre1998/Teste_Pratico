@@ -444,7 +444,7 @@ def verificar_bloco():
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
-st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
+st.set_page_config(page_title="🐀 Rato", layout="wide")
 
 # Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
