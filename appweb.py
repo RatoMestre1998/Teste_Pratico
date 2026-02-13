@@ -523,7 +523,7 @@ if 'erros' not in st.session_state:
     st.session_state.erros = []
 
 # Cabeçalho
-st.title("🛡️ Cisco SRWE - Skills Assessment (Block Mode)")
+st.title("🐀 Modo Rato da Cisco")
 st.progress((st.session_state.indice_atual + 1) / len(desafios))
 
 # Dados do Desafio Atual
@@ -550,7 +550,7 @@ with col1:
         st.button("Next ➡️", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == len(desafios)-1))
 
 with col2:
-    st.subheader("Terminal (Write the full block)")
+    st.subheader("Terminal")
     
     with st.form(key='bloco_form'):
         st.text_area(
