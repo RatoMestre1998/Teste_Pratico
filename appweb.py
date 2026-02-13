@@ -398,6 +398,7 @@ def navegar(direcao):
     novo_indice = idx_atual + direcao
     if 0 <= novo_indice < len(desafios):
         st.session_state.indice_atual = novo_indice
+        # Limpa feedbacks ao mudar, mas o texto será recuperado pelo st.session_state
         st.session_state.feedback = ""
         st.session_state.erros = []
 
@@ -408,8 +409,9 @@ def limpar_resposta_atual():
 
 def verificar_bloco():
     idx = st.session_state.indice_atual
+    # Usamos o valor que está na área de texto no momento do clique
     user_text = st.session_state.resposta_temp
-    st.session_state.respostas_guardadas[idx] = user_text 
+    st.session_state.respostas_guardadas[idx] = user_text # Grava a tentativa
     
     resposta_esperada = desafios[idx]['resposta_esperada']
     linhas_user = normalizar_lista(user_text)
@@ -444,6 +446,7 @@ def verificar_bloco():
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
+# Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'concluidos' not in st.session_state:
@@ -452,6 +455,7 @@ if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
 if 'erros' not in st.session_state:
     st.session_state.erros = []
+# NOVO: Dicionário para reter as respostas de cada tarefa
 if 'respostas_guardadas' not in st.session_state:
     st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
@@ -464,20 +468,17 @@ st.title("Modo Rato da Cisco")
 st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
 
+
+
 desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
 
 with col1:
     st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{total_desafios}")
     st.markdown(f"### {desafio_atual['titulo']}")
-    
-    # --- ALTERAÇÃO SOLICITADA: CAIXA AZUL SÓ PARA O CABEÇALHO ---
     st.info("Instructions:")
-    # Apresenta apenas a 1ª linha da lista de instruções como um tópico
-    st.markdown(f"&bull; {desafio_atual['instrucoes'][0]}")
-    # O resto das instruções pode ser listado abaixo se necessário, 
-    # mas conforme pedido, mostramos apenas a 1ª linha.
-    
+    for instr in desafio_atual['instrucoes']:
+        st.markdown(f"- {instr}")
     st.divider()
     
     c_prev, c_next = st.columns(2)
@@ -488,10 +489,11 @@ with col1:
 
 with col2:
     st.subheader("Terminal")
+    # A text_area carrega o valor que está no dicionário respostas_guardadas
     st.text_area(
         "Introduza os comandos (1 por linha):", 
         value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
-        key="resposta_temp",
+        key="resposta_temp", # Chave temporária para capturar o input atual
         height=300
     )
     
