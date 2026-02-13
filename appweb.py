@@ -445,18 +445,42 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO POR BLOCOS
+# 2. LÓGICA DE VALIDAÇÃO (VERSÃO ABREVIADA)
 # ==========================================
 
-def normalizar_lista(texto):
-    """Transforma texto multilinhas numa lista de linhas limpas"""
-    if not texto:
-        return []
-    
-    linhas = texto.strip().split('\n')
-    # Remove espaços em branco no início/fim de cada linha e ignora linhas vazias
-    linhas_limpas = [linha.strip().lower() for linha in linhas if linha.strip()]
-    return linhas_limpas
+def comparar_comandos(user_line, target_line):
+    """
+    Verifica se a linha do utilizador coincide com a esperada, 
+    permitindo abreviaturas (ex: 'int' para 'interface').
+    """
+    u_parts = user_line.split()
+    t_parts = target_line.split()
+
+    # Se o número de palavras for muito diferente, provavelmente está errado
+    if len(u_parts) != len(t_parts):
+        # Caso especial: 'conf t' (2 palavras) para 'configure terminal' (2 palavras) - ok
+        # Caso especial: 'int g0/0' (2 palavras) para 'interface gigabitethernet 0/0' (3 palavras)
+        # Vamos normalizar termos colados como g0/0/1
+        user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
+        target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
+        u_parts = user_line_norm.split()
+        t_parts = target_line_norm.split()
+        
+        if len(u_parts) != len(t_parts):
+            return False
+
+    for u_word, t_word in zip(u_parts, t_parts):
+        # Normaliza abreviaturas comuns antes da comparação de prefixo
+        u_word = u_word.replace("int", "interface").replace("conf", "configure")
+        u_word = u_word.replace("t", "terminal").replace("sw", "switchport")
+        u_word = u_word.replace("add", "address").replace("desc", "description")
+        u_word = u_word.replace("shut", "shutdown").replace("ena", "enable")
+
+        # Verifica se a palavra do utilizador é um prefixo da palavra correta
+        if not t_word.startswith(u_word):
+            return False
+            
+    return True
 
 def verificar_bloco():
     idx = st.session_state.indice_atual
@@ -465,33 +489,35 @@ def verificar_bloco():
     user_text = st.session_state.resposta_user
     resposta_esperada = desafio['resposta_esperada']
     
-    linhas_user = normalizar_lista(user_text)
-    linhas_gabarito = normalizar_lista(resposta_esperada)
+    linhas_user = [l.strip().lower() for l in user_text.strip().split('\n') if l.strip()]
+    linhas_gabarito = [l.strip().lower() for l in resposta_esperada.strip().split('\n') if l.strip()]
     
-    # Se estiver vazio
     if not linhas_user:
         st.session_state.feedback = "A caixa está vazia."
         st.session_state.erros = []
         return
 
     erros = []
-    # Verifica linha a linha
-    max_len = max(len(linhas_user), len(linhas_gabarito))
     tudo_correto = True
     
-    for i in range(max_len):
-        linha_u = linhas_user[i] if i < len(linhas_user) else "(Falta linha)"
-        linha_g = linhas_gabarito[i] if i < len(linhas_gabarito) else "(Linha extra não esperada)"
-        
-        # Normalizações simples para aceitar variações comuns
-        linha_u_fix = linha_u.replace("domain lookup", "domain-lookup")
-        linha_g_fix = linha_g.replace("domain lookup", "domain-lookup")
-        linha_u_fix = linha_u_fix.replace("gigabitethernet", "g")
-        linha_g_fix = linha_g_fix.replace("gigabitethernet", "g")
-
-        if linha_u_fix != linha_g_fix:
+    # Compara linha a linha usando a nova lógica flexível
+    for i in range(len(linhas_gabarito)):
+        if i >= len(linhas_user):
             tudo_correto = False
-            erros.append(f"Linha {i+1}: Escreveste '{linha_u}' -> Esperado '{linha_g}'")
+            erros.append(f"Linha {i+1}: Falta o comando '{linhas_gabarito[i]}'")
+            continue
+            
+        lu = linhas_user[i]
+        lg = linhas_gabarito[i]
+
+        if not comparar_comandos(lu, lg):
+            tudo_correto = False
+            erros.append(f"Linha {i+1}: Escreveste '{lu}' -> Não reconhecido para '{lg}'")
+
+    # Verifica se há linhas a mais
+    if len(linhas_user) > len(linhas_gabarito):
+        tudo_correto = False
+        erros.append(f"Escreveste {len(linhas_user)} linhas, mas apenas {len(linhas_gabarito)} são esperadas.")
 
     if tudo_correto:
         st.session_state.feedback = "BLOCO CORRETO! Muito bem."
@@ -500,15 +526,6 @@ def verificar_bloco():
     else:
         st.session_state.feedback = "Existem erros no bloco."
         st.session_state.erros = erros
-
-def navegar(direcao):
-    novo_indice = st.session_state.indice_atual + direcao
-    if 0 <= novo_indice < len(desafios):
-        st.session_state.indice_atual = novo_indice
-        st.session_state.resposta_user = ""
-        st.session_state.feedback = ""
-        st.session_state.erros = []
-
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
