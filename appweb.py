@@ -515,6 +515,7 @@ def verificar_bloco():
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
+# Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'concluidos' not in st.session_state:
@@ -526,12 +527,13 @@ if 'erros' not in st.session_state:
 if 'respostas_guardadas' not in st.session_state:
     st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
+# Cálculo de progresso
 total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
 percentagem = (concluidos_count / total_desafios) * 100
 
 st.title("Modo Rato da Cisco")
-st.write(f"Conclusao: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
+st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
 
 desafio_atual = desafios[st.session_state.indice_atual]
@@ -553,19 +555,25 @@ with col1:
 
 with col2:
     st.subheader("Terminal")
-    st.text_area(
-        "Introduza os comandos (1 por linha):", 
-        value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
-        key="resposta_temp",
-        height=300
-    )
     
-    c_val, c_res = st.columns(2)
-    with c_val:
-        st.button("Validar Bloco", on_click=verificar_bloco)
-    with c_res:
-        st.button("Limpar Resposta", on_click=limpar_resposta_atual)
+    # NOVO: Início do formulário para capturar CTRL+Enter
+    with st.form(key='terminal_form', clear_on_submit=False):
+        st.text_area(
+            "Introduza os comandos (1 por linha). Use CTRL+Enter para validar ou pedir ajuda:", 
+            value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
+            key="resposta_temp",
+            height=300
+        )
+        
+        c_val, c_res = st.columns(2)
+        with c_val:
+            # O form_submit_button é o que ativa o gatilho do CTRL+Enter
+            st.form_submit_button("Validar Bloco / Ajuda", on_click=verificar_bloco)
+        with c_res:
+            # Botão de reset dentro do form (opcional)
+            st.button("Limpar Resposta", on_click=limpar_resposta_atual)
     
+    # Exibição de Feedback fora do formulário para atualização imediata
     if st.session_state.feedback:
         if "BLOCO CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
@@ -579,5 +587,5 @@ with col2:
                         st.write(erro)
 
     st.divider()
-    with st.expander("Ver Solucao Completa"):
+    with st.expander("Ver Solução Completa"):
         st.code(desafio_atual['resposta_esperada'])
