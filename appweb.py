@@ -554,7 +554,7 @@ with col2:
     
     with st.form(key='bloco_form'):
         st.text_area(
-            "Enter commands (one per line):",
+            "Introduza os comandos (1 por linha):",
             key="resposta_user",
             height=300,
             placeholder="Example:\nenable\nconfigure terminal\n..."
