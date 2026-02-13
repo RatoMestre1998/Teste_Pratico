@@ -360,21 +360,25 @@ exit"""
 # 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
 # ==========================================
 
+# Dicionário de abreviaturas comuns movido para escopo global para ser usado nas duas funções
+ABREVIATURAS_CISCO = {
+    "ena": "enable", "conf": "configure", "t": "terminal",
+    "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
+    "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
+    "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
+    "add": "address", "desc": "description", "shut": "shutdown",
+    "no shut": "no shutdown", "exit": "exit", "log": "login",
+    "pass": "password", "enc": "encapsulation", "chan": "channel-group",
+    "ban": "banner", "motd": "motd", "sh": "show", "cop": "copy",
+    "run": "running-config", "start": "startup-config"
+}
+
 def normalizar_lista(texto):
     if not texto:
         return []
     return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
 
 def comparar_comandos(user_line, target_line):
-    abreviaturas = {
-        "ena": "enable", "conf": "configure", "t": "terminal",
-        "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
-        "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
-        "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
-        "add": "address", "desc": "description", "shut": "shutdown",
-        "no shut": "no shutdown", "exit": "exit", "log": "login",
-        "pass": "password", "enc": "encapsulation", "chan": "channel-group"
-    }
     user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
     target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
     u_parts = user_line_norm.split()
@@ -384,31 +388,36 @@ def comparar_comandos(user_line, target_line):
         return False
 
     for u_word, t_word in zip(u_parts, t_parts):
-        if u_word in abreviaturas:
-            u_word = abreviaturas[u_word]
+        if u_word in ABREVIATURAS_CISCO:
+            u_word = ABREVIATURAS_CISCO[u_word]
         if not t_word.startswith(u_word):
             return False
     return True
 
 def obter_ajuda_ios(linha_u, linha_g):
     """
-    Analisa a linha com '?' e sugere o proximo passo ou completa a palavra.
+    Analisa a linha com '?' e sugere o próximo passo.
     """
     comando_parcial = linha_u.replace("?", "").strip()
+    
+    # Se o utilizador escreveu apenas '?', mostra a linha inteira ou o inicio
     if not comando_parcial:
         return f"Ajuda: {linha_g}"
     
     u_parts = comando_parcial.split()
     t_parts = linha_g.split()
     
-    if len(u_parts) > len(t_parts):
-        return "Ajuda: cr (Comando completo, pressione Enter)"
+    # Se já escreveu tudo
+    if len(u_parts) >= len(t_parts) and not linha_u.endswith("?"): 
+         return "Ajuda: <cr>"
 
-    indice = len(u_parts) - 1
+    # Se estamos a meio de uma palavra (ex: 'ban?') -> Completar palavra atual
+    indice_atual = len(u_parts) - 1
     if not linha_u.endswith(" ?") and linha_u.endswith("?"):
-        if indice < len(t_parts):
-            return f"Ajuda: {t_parts[indice]}"
+        if indice_atual < len(t_parts):
+            return f"Ajuda: {t_parts[indice_atual]}"
     
+    # Se estamos a pedir o próximo argumento (ex: 'banner ?')
     if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
         proximo_indice = len(u_parts)
         if proximo_indice < len(t_parts):
@@ -437,17 +446,40 @@ def verificar_bloco():
     user_text = st.session_state.resposta_temp
     st.session_state.respostas_guardadas[idx] = user_text
     
-    # --- LOGICA DO PONTO DE INTERROGACAO ---
     linhas_user_raw = user_text.strip().split('\n')
     linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
 
+    # --- LOGICA DO PONTO DE INTERROGACAO ---
     if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
-        num_linha = len(linhas_user_raw) - 1
-        if num_linha < len(linhas_gabarito_raw):
-            ajuda = obter_ajuda_ios(linhas_user_raw[-1].lower(), linhas_gabarito_raw[num_linha].lower())
+        ultima_linha = linhas_user_raw[-1].strip().lower()
+        termo_busca = ultima_linha.replace("?", "").strip().split()
+        
+        linha_alvo = None
+        
+        # 1. Tenta encontrar a linha correspondente pelo contexto (primeira palavra)
+        if termo_busca:
+            primeira_palavra = termo_busca[0]
+            # Resolve abreviatura se existir
+            if primeira_palavra in ABREVIATURAS_CISCO:
+                primeira_palavra = ABREVIATURAS_CISCO[primeira_palavra]
+            
+            for g_line in linhas_gabarito_raw:
+                g_parts = g_line.lower().split()
+                if g_parts and g_parts[0].startswith(primeira_palavra):
+                    linha_alvo = g_line
+                    break
+        
+        # 2. Se não encontrou pelo contexto, usa o indice da linha (fallback)
+        if not linha_alvo:
+            num_linha = len(linhas_user_raw) - 1
+            if num_linha < len(linhas_gabarito_raw):
+                linha_alvo = linhas_gabarito_raw[num_linha]
+
+        if linha_alvo:
+            ajuda = obter_ajuda_ios(ultima_linha, linha_alvo.lower())
             st.session_state.feedback = ajuda
         else:
-            st.session_state.feedback = "Ajuda: Nao sao esperados mais comandos para este bloco."
+            st.session_state.feedback = "Ajuda: Comando não encontrado no gabarito ou bloco terminado."
         return
 
     # --- LOGICA DE VALIDACAO NORMAL ---
@@ -455,7 +487,7 @@ def verificar_bloco():
     linhas_gabarito = normalizar_lista(desafio['resposta_esperada'])
     
     if not linhas_user:
-        st.session_state.feedback = "A caixa esta vazia."
+        st.session_state.feedback = "A caixa está vazia."
         st.session_state.erros = []
         return
 
