@@ -1,7 +1,21 @@
 import streamlit as st
 
 # ==========================================
-# 1. BASE DE DADOS (BLOCOS DE COMANDOS)
+# 1. CONFIGURAÇÕES E ABREVIATURAS
+# ==========================================
+ABREVIATURAS_CISCO = {
+    "ena": "enable", "conf": "configure", "t": "terminal",
+    "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
+    "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
+    "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
+    "add": "address", "desc": "description", "shut": "shutdown",
+    "no shut": "no shutdown", "exit": "exit", "log": "login",
+    "pass": "password", "enc": "encapsulation", "chan": "channel-group",
+    "ban": "banner", "motd": "motd", "sh": "show"
+}
+
+# ==========================================
+# 2. BASE DE DADOS COMPLETA
 # ==========================================
 desafios = [
     {
@@ -357,48 +371,43 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
+# 3. LÓGICA DE VALIDAÇÃO E AJUDA
 # ==========================================
 
 def normalizar_lista(texto):
-    if not texto:
-        return []
+    if not texto: return []
     return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
 
 def comparar_comandos(user_line, target_line):
-    abreviaturas = {
-        "ena": "enable", "conf": "configure", "t": "terminal",
-        "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
-        "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
-        "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
-        "add": "address", "desc": "description", "shut": "shutdown",
-        "no shut": "no shutdown", "exit": "exit", "log": "login",
-        "pass": "password", "enc": "encapsulation", "chan": "channel-group"
-    }
     user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
     target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
     u_parts = user_line_norm.split()
     t_parts = target_line_norm.split()
-
-    if len(u_parts) != len(t_parts):
-        return False
-
+    if len(u_parts) != len(t_parts): return False
     for u_word, t_word in zip(u_parts, t_parts):
-        if u_word in abreviaturas:
-            u_word = abreviaturas[u_word]
-        if not t_word.startswith(u_word):
-            return False
+        if u_word in ABREVIATURAS_CISCO: u_word = ABREVIATURAS_CISCO[u_word]
+        if not t_word.startswith(u_word): return False
     return True
 
+def obter_ajuda_ios(linha_u, linha_g):
+    comando_parcial = linha_u.replace("?", "").strip()
+    if not comando_parcial: return f"Ajuda: {linha_g}"
+    u_parts = comando_parcial.split()
+    t_parts = linha_g.split()
+    if len(u_parts) > len(t_parts): return "Ajuda: <cr> (Pressione Enter para validar)"
+    indice_atual = len(u_parts) - 1
+    if not linha_u.endswith(" ?") and linha_u.endswith("?"):
+        if indice_atual < len(t_parts): return f"Ajuda: {t_parts[indice_atual]}"
+    if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
+        proximo_indice = len(u_parts)
+        if proximo_indice < len(t_parts): return f"Ajuda: {t_parts[proximo_indice]}"
+    return f"Ajuda: {linha_g}"
+
 def navegar(direcao):
-    # ANTES de navegar, guardamos o que está na text_area atual
-    idx_atual = st.session_state.indice_atual
-    st.session_state.respostas_guardadas[idx_atual] = st.session_state.resposta_temp
-    
-    novo_indice = idx_atual + direcao
+    st.session_state.respostas_guardadas[st.session_state.indice_atual] = st.session_state.resposta_temp
+    novo_indice = st.session_state.indice_atual + direcao
     if 0 <= novo_indice < len(desafios):
         st.session_state.indice_atual = novo_indice
-        # Limpa feedbacks ao mudar, mas o texto será recuperado pelo st.session_state
         st.session_state.feedback = ""
         st.session_state.erros = []
 
@@ -409,19 +418,39 @@ def limpar_resposta_atual():
 
 def verificar_bloco():
     idx = st.session_state.indice_atual
-    # Usamos o valor que está na área de texto no momento do clique
+    desafio = desafios[idx]
     user_text = st.session_state.resposta_temp
-    st.session_state.respostas_guardadas[idx] = user_text # Grava a tentativa
-    
-    resposta_esperada = desafios[idx]['resposta_esperada']
-    linhas_user = normalizar_lista(user_text)
-    linhas_gabarito = normalizar_lista(resposta_esperada)
-    
-    if not linhas_user:
-        st.session_state.feedback = "A caixa está vazia."
-        st.session_state.erros = []
+    st.session_state.respostas_guardadas[idx] = user_text
+    linhas_user_raw = user_text.strip().split('\n')
+    linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
+
+    if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
+        ultima_linha = linhas_user_raw[-1].strip().lower()
+        termo_busca = ultima_linha.replace("?", "").strip().split()
+        linha_alvo = None
+        if termo_busca:
+            primeira_palavra = termo_busca[0]
+            if primeira_palavra in ABREVIATURAS_CISCO: primeira_palavra = ABREVIATURAS_CISCO[primeira_palavra]
+            for g_line in linhas_gabarito_raw:
+                g_parts = g_line.lower().split()
+                if g_parts and g_parts[0].startswith(primeira_palavra):
+                    linha_alvo = g_line
+                    break
+        if not linha_alvo:
+            num_linha = len(linhas_user_raw) - 1
+            if num_linha < len(linhas_gabarito_raw): linha_alvo = linhas_gabarito_raw[num_linha]
+        if linha_alvo:
+            st.session_state.feedback = obter_ajuda_ios(ultima_linha, linha_alvo.lower())
+        else:
+            st.session_state.feedback = "Ajuda: Comando nao encontrado no contexto atual."
         return
 
+    linhas_user = normalizar_lista(user_text)
+    linhas_gabarito = normalizar_lista(desafio['resposta_esperada'])
+    if not linhas_user:
+        st.session_state.feedback = "A caixa esta vazia."
+        st.session_state.erros = []
+        return
     erros = []
     tudo_correto = True
     for i in range(len(linhas_gabarito)):
@@ -431,8 +460,7 @@ def verificar_bloco():
             continue
         if not comparar_comandos(linhas_user[i], linhas_gabarito[i]):
             tudo_correto = False
-            erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}' -> Esperado algo como '{linhas_gabarito[i]}'")
-
+            erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}'")
     if tudo_correto:
         st.session_state.feedback = "BLOCO CORRETO! Muito bem."
         st.session_state.concluidos.add(idx)
@@ -442,77 +470,58 @@ def verificar_bloco():
         st.session_state.erros = erros
 
 # ==========================================
-# 3. INTERFACE STREAMLIT
+# 4. INTERFACE STREAMLIT
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
-# Inicialização de variáveis de estado
-if 'indice_atual' not in st.session_state:
-    st.session_state.indice_atual = 0
-if 'concluidos' not in st.session_state:
-    st.session_state.concluidos = set()
-if 'feedback' not in st.session_state:
-    st.session_state.feedback = ""
-if 'erros' not in st.session_state:
-    st.session_state.erros = []
-# NOVO: Dicionário para reter as respostas de cada tarefa
+if 'indice_atual' not in st.session_state: st.session_state.indice_atual = 0
+if 'concluidos' not in st.session_state: st.session_state.concluidos = set()
+if 'feedback' not in st.session_state: st.session_state.feedback = ""
+if 'erros' not in st.session_state: st.session_state.erros = []
 if 'respostas_guardadas' not in st.session_state:
     st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
-# Cálculo de progresso
-total_desafios = len(desafios)
-concluidos_count = len(st.session_state.concluidos)
-percentagem = (concluidos_count / total_desafios) * 100
-
+pontuacao = (len(st.session_state.concluidos) / len(desafios)) * 100
 st.title("Modo Rato da Cisco")
-st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
-st.progress(percentagem / 100)
-
-
+st.write(f"Conclusao: {pontuacao:.2f}% ({len(st.session_state.concluidos)} de {len(desafios)} tarefas)")
+st.progress(pontuacao / 100)
 
 desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{total_desafios}")
+    st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{len(desafios)}")
     st.markdown(f"### {desafio_atual['titulo']}")
-    st.info("Instructions:")
-    for instr in desafio_atual['instrucoes']:
-        st.markdown(f"- {instr}")
-    st.divider()
     
+    # Bloco de Instruções em estilo caixa azul
+    instrucoes_texto = "\n".join([f"- {instr}" for instr in desafio_atual['instrucoes']])
+    st.info(f"**Instructions:**\n\n{instrucoes_texto}")
+    
+    st.divider()
     c_prev, c_next = st.columns(2)
-    with c_prev:
-        st.button("Anterior", on_click=navegar, args=(-1,), disabled=(st.session_state.indice_atual == 0))
-    with c_next:
-        st.button("Seguinte", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == total_desafios-1))
+    with c_prev: st.button("Anterior", on_click=navegar, args=(-1,), disabled=(st.session_state.indice_atual == 0))
+    with c_next: st.button("Seguinte", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == len(desafios)-1))
 
 with col2:
     st.subheader("Terminal")
-    # A text_area carrega o valor que está no dicionário respostas_guardadas
-    st.text_area(
-        "Introduza os comandos (1 por linha):", 
-        value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
-        key="resposta_temp", # Chave temporária para capturar o input atual
-        height=300
-    )
-    
-    c_val, c_res = st.columns(2)
-    with c_val:
-        st.button("Validar Bloco", on_click=verificar_bloco)
-    with c_res:
-        st.button("Limpar Resposta", on_click=limpar_resposta_atual)
+    with st.form(key='terminal_form', clear_on_submit=False):
+        st.text_area(
+            "Consola (Escreva '?' + CTRL+Enter para ajuda, ou apenas CTRL+Enter para validar):", 
+            value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
+            key="resposta_temp", height=300
+        )
+        c_val, c_res = st.columns(2)
+        with c_val: st.form_submit_button("Submeter / Ajuda", on_click=verificar_bloco)
+        with c_res: st.form_submit_button("Limpar Terminal", on_click=limpar_resposta_atual)
     
     if st.session_state.feedback:
-        if "BLOCO CORRETO" in st.session_state.feedback:
-            st.success(st.session_state.feedback)
+        if "CORRETO" in st.session_state.feedback: st.success(st.session_state.feedback)
+        elif "Ajuda:" in st.session_state.feedback: st.info(st.session_state.feedback)
         else:
             st.error(st.session_state.feedback)
             if st.session_state.erros:
-                with st.expander("View Error Details"):
-                    for erro in st.session_state.erros:
-                        st.write(erro)
+                with st.expander("Ver detalhes dos erros"):
+                    for erro in st.session_state.erros: st.write(erro)
 
     st.divider()
-    with st.expander("Ver Solução Completa"):
-        st.code(desafio_atual['resposta_esperada'])
+    with st.expander("Ver Solucao Completa"): st.code(desafio_atual['resposta_esperada'])
