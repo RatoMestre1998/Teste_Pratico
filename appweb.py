@@ -357,8 +357,21 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E AJUDA
+# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
 # ==========================================
+
+# Definido globalmente para evitar NameError
+ABREVIATURAS_CISCO = {
+    "ena": "enable", "conf": "configure", "t": "terminal",
+    "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
+    "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
+    "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
+    "add": "address", "desc": "description", "shut": "shutdown",
+    "no shut": "no shutdown", "exit": "exit", "log": "login",
+    "pass": "password", "enc": "encapsulation", "chan": "channel-group",
+    "ban": "banner", "motd": "motd", "sh": "show", "cop": "copy",
+    "run": "running-config", "start": "startup-config"
+}
 
 def normalizar_lista(texto):
     if not texto:
@@ -366,7 +379,6 @@ def normalizar_lista(texto):
     return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
 
 def comparar_comandos(user_line, target_line):
-    # Dicionário interno para expansão de comandos
     user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
     target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
     u_parts = user_line_norm.split()
@@ -383,11 +395,7 @@ def comparar_comandos(user_line, target_line):
     return True
 
 def obter_ajuda_ios(linha_u, linha_g):
-    """
-    Analisa a linha com '?' e sugere o próximo passo.
-    """
     comando_parcial = linha_u.replace("?", "").strip()
-    
     if not comando_parcial:
         return f"Ajuda: {linha_g}"
     
@@ -395,16 +403,13 @@ def obter_ajuda_ios(linha_u, linha_g):
     t_parts = linha_g.split()
     
     if len(u_parts) > len(t_parts):
-        return "Ajuda: <cr> (Linha completa, pressione Enter para validar)"
+        return "Ajuda: <cr> (Linha completa, pressione CTRL+Enter para validar)"
 
     indice_atual = len(u_parts) - 1
-    
-    # Se estamos a completar uma palavra (ex: ban?)
     if not linha_u.endswith(" ?") and linha_u.endswith("?"):
         if indice_atual < len(t_parts):
             return f"Ajuda: {t_parts[indice_atual]}"
     
-    # Se estamos a pedir o próximo argumento (ex: banner ?)
     if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
         proximo_indice = len(u_parts)
         if proximo_indice < len(t_parts):
@@ -426,10 +431,6 @@ def limpar_resposta_atual():
     st.session_state.erros = []
 
 def verificar_bloco():
-    """
-    Função híbrida: Se a última linha tiver '?', dá ajuda. 
-    Caso contrário, valida o bloco todo.
-    """
     idx = st.session_state.indice_atual
     desafio = desafios[idx]
     user_text = st.session_state.resposta_temp
@@ -438,7 +439,6 @@ def verificar_bloco():
     linhas_user_raw = user_text.strip().split('\n')
     linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
 
-    # --- DETEÇÃO DE PEDIDO DE AJUDA ---
     if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
         ultima_linha = linhas_user_raw[-1].strip().lower()
         termo_busca = ultima_linha.replace("?", "").strip().split()
@@ -463,15 +463,14 @@ def verificar_bloco():
         if linha_alvo:
             st.session_state.feedback = obter_ajuda_ios(ultima_linha, linha_alvo.lower())
         else:
-            st.session_state.feedback = "Ajuda: Comando não encontrado no contexto atual."
+            st.session_state.feedback = "Ajuda: Comando nao encontrado no contexto atual."
         return
 
-    # --- VALIDAÇÃO NORMAL DO BLOCO ---
     linhas_user = normalizar_lista(user_text)
     linhas_gabarito = normalizar_lista(desafio['resposta_esperada'])
     
     if not linhas_user:
-        st.session_state.feedback = "A caixa está vazia."
+        st.session_state.feedback = "A caixa esta vazia."
         st.session_state.erros = []
         return
 
@@ -499,7 +498,6 @@ def verificar_bloco():
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
-# Inicialização de variáveis (Dicionário de abreviaturas deve estar definido no topo)
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'concluidos' not in st.session_state:
@@ -511,13 +509,12 @@ if 'erros' not in st.session_state:
 if 'respostas_guardadas' not in st.session_state:
     st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
-# Cálculo de progresso
 total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
 percentagem = (concluidos_count / total_desafios) * 100
 
 st.title("Modo Rato da Cisco")
-st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
+st.write(f"Conclusao: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
 
 desafio_atual = desafios[st.session_state.indice_atual]
@@ -550,7 +547,6 @@ with col2:
         
         c_val, c_res = st.columns(2)
         with c_val:
-            # O primeiro form_submit_button é o que o CTRL+Enter aciona por defeito
             st.form_submit_button("Submeter / Ajuda", on_click=verificar_bloco)
         with c_res:
             st.form_submit_button("Limpar Terminal", on_click=limpar_resposta_atual)
@@ -568,5 +564,5 @@ with col2:
                         st.write(erro)
 
     st.divider()
-    with st.expander("Ver Solução Completa"):
+    with st.expander("Ver Solucao Completa"):
         st.code(desafio_atual['resposta_esperada'])
