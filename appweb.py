@@ -357,7 +357,7 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E AJUDA
+# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
 # ==========================================
 
 def normalizar_lista(texto):
@@ -392,10 +392,9 @@ def comparar_comandos(user_line, target_line):
 
 def obter_ajuda_ios(linha_u, linha_g):
     """
-    Analisa a linha com '?' e sugere o próximo passo ou completa a palavra.
+    Analisa a linha com '?' e sugere o proximo passo ou completa a palavra.
     """
     comando_parcial = linha_u.replace("?", "").strip()
-    
     if not comando_parcial:
         return f"Ajuda: {linha_g}"
     
@@ -403,16 +402,13 @@ def obter_ajuda_ios(linha_u, linha_g):
     t_parts = linha_g.split()
     
     if len(u_parts) > len(t_parts):
-        return "Ajuda: <cr> (Comando completo, pressione Enter)"
+        return "Ajuda: cr (Comando completo, pressione Enter)"
 
     indice = len(u_parts) - 1
-    
-    # Se a ultima palavra estiver incompleta (ex: 'host?')
     if not linha_u.endswith(" ?") and linha_u.endswith("?"):
         if indice < len(t_parts):
             return f"Ajuda: {t_parts[indice]}"
     
-    # Se pediu ajuda para o argumento seguinte (ex: 'hostname ?')
     if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
         proximo_indice = len(u_parts)
         if proximo_indice < len(t_parts):
@@ -439,14 +435,12 @@ def verificar_bloco():
     idx = st.session_state.indice_atual
     desafio = desafios[idx]
     user_text = st.session_state.resposta_temp
-    
-    # Guarda o texto atual na memoria
     st.session_state.respostas_guardadas[idx] = user_text
     
+    # --- LOGICA DO PONTO DE INTERROGACAO ---
     linhas_user_raw = user_text.strip().split('\n')
     linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
 
-    # --- LOGICA DO PONTO DE INTERROGACAO ---
     if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
         num_linha = len(linhas_user_raw) - 1
         if num_linha < len(linhas_gabarito_raw):
@@ -489,7 +483,6 @@ def verificar_bloco():
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
-# Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'concluidos' not in st.session_state:
@@ -498,20 +491,16 @@ if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
 if 'erros' not in st.session_state:
     st.session_state.erros = []
-# NOVO: Dicionário para reter as respostas de cada tarefa
 if 'respostas_guardadas' not in st.session_state:
     st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
-# Cálculo de progresso
 total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
 percentagem = (concluidos_count / total_desafios) * 100
 
 st.title("Modo Rato da Cisco")
-st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
+st.write(f"Conclusao: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
-
-
 
 desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
@@ -532,11 +521,10 @@ with col1:
 
 with col2:
     st.subheader("Terminal")
-    # A text_area carrega o valor que está no dicionário respostas_guardadas
     st.text_area(
         "Introduza os comandos (1 por linha):", 
         value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
-        key="resposta_temp", # Chave temporária para capturar o input atual
+        key="resposta_temp",
         height=300
     )
     
@@ -549,6 +537,8 @@ with col2:
     if st.session_state.feedback:
         if "BLOCO CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
+        elif "Ajuda:" in st.session_state.feedback:
+            st.info(st.session_state.feedback)
         else:
             st.error(st.session_state.feedback)
             if st.session_state.erros:
@@ -557,5 +547,5 @@ with col2:
                         st.write(erro)
 
     st.divider()
-    with st.expander("Ver Solução Completa"):
+    with st.expander("Ver Solucao Completa"):
         st.code(desafio_atual['resposta_esperada'])
