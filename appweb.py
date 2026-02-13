@@ -559,7 +559,7 @@ with col2:
             height=300,
             placeholder="Example:\nenable\nconfigure terminal\n..."
         )
-        st.form_submit_button("Validate Block", on_click=verificar_bloco)
+        st.form_submit_button("Validar Bloco", on_click=verificar_bloco)
     
     # Área de Feedback
     if st.session_state.feedback:
