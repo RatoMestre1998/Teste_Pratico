@@ -355,7 +355,7 @@ if 'erros' not in st.session_state:
     st.session_state.erros = []
 
 # Cabeçalho
-st.title("🛡️ Treino Cisco: Modo Bloco")
+st.title("🛡️ Treino Cisco: Modo Rato")
 st.progress((st.session_state.indice_atual + 1) / len(desafios))
 
 # Dados do Desafio Atual
