@@ -357,7 +357,7 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
+# 2. LÓGICA DE VALIDAÇÃO E AJUDA
 # ==========================================
 
 def normalizar_lista(texto):
@@ -390,15 +390,43 @@ def comparar_comandos(user_line, target_line):
             return False
     return True
 
+def obter_ajuda_ios(linha_u, linha_g):
+    """
+    Analisa a linha com '?' e sugere o próximo passo ou completa a palavra.
+    """
+    comando_parcial = linha_u.replace("?", "").strip()
+    
+    if not comando_parcial:
+        return f"Ajuda: {linha_g}"
+    
+    u_parts = comando_parcial.split()
+    t_parts = linha_g.split()
+    
+    if len(u_parts) > len(t_parts):
+        return "Ajuda: <cr> (Comando completo, pressione Enter)"
+
+    indice = len(u_parts) - 1
+    
+    # Se a ultima palavra estiver incompleta (ex: 'host?')
+    if not linha_u.endswith(" ?") and linha_u.endswith("?"):
+        if indice < len(t_parts):
+            return f"Ajuda: {t_parts[indice]}"
+    
+    # Se pediu ajuda para o argumento seguinte (ex: 'hostname ?')
+    if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
+        proximo_indice = len(u_parts)
+        if proximo_indice < len(t_parts):
+            return f"Ajuda: {t_parts[proximo_indice]}"
+            
+    return f"Ajuda: {linha_g}"
+
 def navegar(direcao):
-    # ANTES de navegar, guardamos o que está na text_area atual
     idx_atual = st.session_state.indice_atual
     st.session_state.respostas_guardadas[idx_atual] = st.session_state.resposta_temp
     
     novo_indice = idx_atual + direcao
     if 0 <= novo_indice < len(desafios):
         st.session_state.indice_atual = novo_indice
-        # Limpa feedbacks ao mudar, mas o texto será recuperado pelo st.session_state
         st.session_state.feedback = ""
         st.session_state.erros = []
 
@@ -409,16 +437,31 @@ def limpar_resposta_atual():
 
 def verificar_bloco():
     idx = st.session_state.indice_atual
-    # Usamos o valor que está na área de texto no momento do clique
+    desafio = desafios[idx]
     user_text = st.session_state.resposta_temp
-    st.session_state.respostas_guardadas[idx] = user_text # Grava a tentativa
     
-    resposta_esperada = desafios[idx]['resposta_esperada']
+    # Guarda o texto atual na memoria
+    st.session_state.respostas_guardadas[idx] = user_text
+    
+    linhas_user_raw = user_text.strip().split('\n')
+    linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
+
+    # --- LOGICA DO PONTO DE INTERROGACAO ---
+    if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
+        num_linha = len(linhas_user_raw) - 1
+        if num_linha < len(linhas_gabarito_raw):
+            ajuda = obter_ajuda_ios(linhas_user_raw[-1].lower(), linhas_gabarito_raw[num_linha].lower())
+            st.session_state.feedback = ajuda
+        else:
+            st.session_state.feedback = "Ajuda: Nao sao esperados mais comandos para este bloco."
+        return
+
+    # --- LOGICA DE VALIDACAO NORMAL ---
     linhas_user = normalizar_lista(user_text)
-    linhas_gabarito = normalizar_lista(resposta_esperada)
+    linhas_gabarito = normalizar_lista(desafio['resposta_esperada'])
     
     if not linhas_user:
-        st.session_state.feedback = "A caixa está vazia."
+        st.session_state.feedback = "A caixa esta vazia."
         st.session_state.erros = []
         return
 
