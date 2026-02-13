@@ -577,5 +577,5 @@ with col2:
     # BOTÃO DE SOLUÇÃO (AGORA SEMPRE VISÍVEL FORA DO IF)
     # -------------------------------------------------------------
     st.divider()
-    with st.expander("👀 Espreitar Solução (Peek Solution)"):
+    with st.expander("Ver Solução Completa"):
         st.code(desafio_atual['resposta_esperada'])
