@@ -572,6 +572,10 @@ with col2:
                 with st.expander("View Error Details"):
                     for erro in st.session_state.erros:
                         st.write(erro)
-            
-            with st.expander("View Full Solution"):
-                st.code(desafio_atual['resposta_esperada'])
+    
+    # -------------------------------------------------------------
+    # BOTÃO DE SOLUÇÃO (AGORA SEMPRE VISÍVEL FORA DO IF)
+    # -------------------------------------------------------------
+    st.divider()
+    with st.expander("👀 Espreitar Solução (Peek Solution)"):
+        st.code(desafio_atual['resposta_esperada'])
