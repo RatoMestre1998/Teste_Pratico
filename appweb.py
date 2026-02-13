@@ -556,7 +556,7 @@ with col1:
 with col2:
     st.subheader("Terminal")
     
-    # NOVO: Início do formulário para capturar CTRL+Enter
+    # Início do formulário para capturar CTRL+Enter
     with st.form(key='terminal_form', clear_on_submit=False):
         st.text_area(
             "Introduza os comandos (1 por linha). Use CTRL+Enter para validar ou pedir ajuda:", 
@@ -567,11 +567,11 @@ with col2:
         
         c_val, c_res = st.columns(2)
         with c_val:
-            # O form_submit_button é o que ativa o gatilho do CTRL+Enter
+            # Botão principal de submissão (Ativado pelo CTRL+Enter)
             st.form_submit_button("Validar Bloco / Ajuda", on_click=verificar_bloco)
         with c_res:
-            # Botão de reset dentro do form (opcional)
-            st.button("Limpar Resposta", on_click=limpar_resposta_atual)
+            # CORREÇÃO: Alterado de st.button para st.form_submit_button
+            st.form_submit_button("Limpar Resposta", on_click=limpar_resposta_atual)
     
     # Exibição de Feedback fora do formulário para atualização imediata
     if st.session_state.feedback:
