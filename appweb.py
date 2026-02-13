@@ -464,7 +464,7 @@ total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
 percentagem = (concluidos_count / total_desafios) * 100
 
-st.title("Modo Rato da Cisco")
+st.title("🐀 Modo Rato da Cisco")
 st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
 
