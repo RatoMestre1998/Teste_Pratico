@@ -1,13 +1,15 @@
 import streamlit as st
 
 # ==========================================
-# 1. LISTA DE DESAFIOS (BASE DE DADOS)
+# 1. LISTA DE DESAFIOS
 # ==========================================
+# ⚠️ IMPORTANTE: Cola aqui a tua lista completa 'desafios = [...]'
+# Mantém a estrutura exata que tinhas antes.
 desafios = [
     # --- Step 1a: Definições Básicas ---
     {
         "contexto": "Router(config)",
-        "pergunta": "Desativar a pesquisa de domínio DNS",
+        "pergunta": "Desativar a pesquisa de domínio DNS (impedir que traduza comandos errados)",
         "resposta": "no ip domain-lookup",
         "alt_respostas": ["no ip domain lookup"]
     },
@@ -728,13 +730,48 @@ def limpar_texto(texto):
         return ""
     return " ".join(texto.strip().lower().split())
 
-def verificar_resposta():
+def navegar(direcao):
+    """Função para mover para trás ou para a frente"""
+    novo_indice = st.session_state.indice_atual + direcao
+    
+    # Garante que não sai dos limites da lista
+    if 0 <= novo_indice < len(desafios):
+        st.session_state.indice_atual = novo_indice
+        # Limpa o feedback e a caixa de texto ao mudar de pergunta
+        st.session_state.feedback = ""
+        st.session_state.resposta_user = ""
+        st.session_state.ajuda_ativa = ""
+
+def verificar_ou_ajudar():
     user_input = st.session_state.resposta_user
     
-    # --- CORREÇÃO: Impede submissões vazias ---
+    # --- LÓGICA DO INTERROGATORIO (?) ---
+    if user_input and user_input.strip().endswith("?"):
+        # Remove o ? e espaços para analisar
+        input_limpo = user_input.replace("?", "").strip().lower()
+        idx = st.session_state.indice_atual
+        resposta_correta = desafios[idx]['resposta']
+        
+        # Se o user não escreveu nada e pôs ?, mostra a primeira palavra
+        if input_limpo == "":
+            st.session_state.ajuda_ativa = f"Dica: O comando começa com '{resposta_correta.split()[0]}...'"
+            st.session_state.feedback = "" # Limpa erro se houver
+            return
+
+        # Verifica se o que ele escreveu até agora bate certo com o início da resposta
+        if resposta_correta.lower().startswith(input_limpo):
+            # Mostra o comando completo como ajuda
+            st.session_state.ajuda_ativa = f"Comando esperado: {resposta_correta}"
+            st.session_state.feedback = ""
+        else:
+            st.session_state.ajuda_ativa = "❌ O início do comando não parece correto. Tenta outra palavra."
+            st.session_state.feedback = ""
+        return
+
+    # --- LÓGICA NORMAL DE VERIFICAÇÃO ---
     if not user_input or user_input.strip() == "":
         st.session_state.feedback = "⚠️ Escreve um comando antes de submeter!"
-        # Não avança o índice nem conta pontuação, apenas retorna
+        st.session_state.ajuda_ativa = ""
         return
 
     idx = st.session_state.indice_atual
@@ -746,82 +783,103 @@ def verificar_resposta():
 
     if resposta_limpa == gabarito_limpo or resposta_limpa in alternativas:
         st.session_state.feedback = "✅ CORRETO!"
-        st.session_state.pontuacao += 1
-        st.session_state.mostrar_proximo = True
+        st.session_state.ajuda_ativa = "" # Limpa a ajuda se acertou
+        # Opcional: Auto-avançar (comentei para deixar o user ver que acertou)
+        # navegar(1) 
     else:
-        st.session_state.feedback = f"❌ INCORRETO. A resposta correta era: {desafio['resposta']}"
-        st.session_state.mostrar_proximo = True
-
-def proximo_desafio():
-    st.session_state.indice_atual += 1
-    st.session_state.mostrar_proximo = False
-    st.session_state.feedback = ""
-    st.session_state.resposta_user = "" 
+        st.session_state.feedback = f"❌ INCORRETO."
+        st.session_state.ajuda_ativa = "" # Limpa ajuda antiga
 
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
 
+# Configuração da Página
+st.set_page_config(page_title="Treino Cisco", layout="centered")
+
 # Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
-if 'pontuacao' not in st.session_state:
-    st.session_state.pontuacao = 0
-if 'mostrar_proximo' not in st.session_state:
-    st.session_state.mostrar_proximo = False
 if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
+if 'ajuda_ativa' not in st.session_state:
+    st.session_state.ajuda_ativa = ""
+if 'resposta_user' not in st.session_state:
+    st.session_state.resposta_user = ""
 
-st.title("Treino Cisco SRWE - Terminal")
+st.title("📟 Simulador Cisco SRWE")
 
-# Se ainda houver desafios
+# Verifica se a lista não está vazia ou acabada
 if st.session_state.indice_atual < len(desafios):
     desafio_atual = desafios[st.session_state.indice_atual]
     
-    # Barra de Progresso
-    progresso = st.session_state.indice_atual / len(desafios)
-    st.progress(progresso)
-    st.write(f"Passo {st.session_state.indice_atual + 1} de {len(desafios)}")
+    # --- BARRA DE NAVEGAÇÃO ---
+    col_prev, col_prog, col_next = st.columns([1, 3, 1])
     
-    # Pergunta
+    with col_prev:
+        if st.button("⬅️ Anterior", disabled=(st.session_state.indice_atual == 0)):
+            navegar(-1)
+            st.rerun()
+
+    with col_prog:
+        progresso = (st.session_state.indice_atual + 1) / len(desafios)
+        st.progress(progresso)
+        st.caption(f"Passo {st.session_state.indice_atual + 1} de {len(desafios)}")
+
+    with col_next:
+        if st.button("Próximo ➡️", disabled=(st.session_state.indice_atual == len(desafios) - 1)):
+            navegar(1)
+            st.rerun()
+
+    st.divider()
+
+    # --- ÁREA DO DESAFIO ---
     st.subheader(f"Tarefa: {desafio_atual['pergunta']}")
     
-    # Terminal Simulado
-    st.code(f"{desafio_atual['contexto']}#", language="text")
+    # Terminal Simulado (Visual)
+    st.code(f"{desafio_atual['contexto']}# {st.session_state.resposta_user}", language="bash")
 
-    # Área de Input e Botões
-    if not st.session_state.mostrar_proximo:
-        # Formulário para capturar o "Enter" e o clique
-        with st.form(key='my_form', clear_on_submit=False):
-            st.text_input(
-                "Digita o comando:", 
-                key="resposta_user"
-            )
-            submit_button = st.form_submit_button(label="Submeter")
-            
-            if submit_button:
-                verificar_resposta()
-                st.rerun() # Recarrega para mostrar o resultado imediatamente
+    # --- ÁREA DE INPUT ---
+    # O formulário permite submeter com "Enter"
+    with st.form(key='console_form', clear_on_submit=False):
+        user_input = st.text_input(
+            "Digita o comando (usa '?' para ajuda):", 
+            key="resposta_user",
+            placeholder="Ex: ip address..."
+        )
         
-        # Mostra aviso se tiver tentado submeter vazio (definido na função verificar_resposta)
-        if "⚠️" in st.session_state.feedback:
-             st.warning(st.session_state.feedback)
+        # Botão de submissão
+        submitted = st.form_submit_button("Verificar / Enter")
+        
+        if submitted:
+            verificar_ou_ajudar()
+            st.rerun()
 
-    else:
-        # Resultado e Botão Próximo
+    # --- FEEDBACK E AJUDA ---
+    
+    # 1. Mostra Ajuda do '?' (Azul)
+    if st.session_state.ajuda_ativa:
+        st.info(st.session_state.ajuda_ativa)
+
+    # 2. Mostra Sucesso ou Erro
+    if st.session_state.feedback:
         if "CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
-        else:
+            # Botão extra para avançar rapidamente se acertou
+            if st.button("Avançar para o próximo passo"):
+                navegar(1)
+                st.rerun()
+        elif "INCORRETO" in st.session_state.feedback:
             st.error(st.session_state.feedback)
-            
-        st.button("Próximo Desafio", on_click=proximo_desafio)
+            # Opção de ver a resposta se estiver mesmo encravado
+            with st.expander("Ver Resposta Correta (Desistir deste passo)"):
+                st.code(desafio_atual['resposta'])
 
-# Fim do Treino
 else:
+    st.balloons()
     st.success("🎉 TREINO CONCLUÍDO!")
-    st.write(f"Pontuação Final: {st.session_state.pontuacao} / {len(desafios)}")
-    if st.button("Reiniciar"):
+    if st.button("Reiniciar Tudo"):
         st.session_state.indice_atual = 0
-        st.session_state.pontuacao = 0
-        st.session_state.mostrar_proximo = False
+        st.session_state.feedback = ""
+        st.session_state.resposta_user = ""
         st.rerun()
