@@ -467,7 +467,7 @@ desafios = [
         "contexto": "S2(config-line)",
         "pergunta": "(S2) Sair das linhas",
         "resposta": "exit"
-    }
+    },
     # ==========================================
     # SVI & GATEWAY (Step 4)
     # ==========================================
