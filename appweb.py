@@ -103,7 +103,7 @@ desafios = [
         "contexto": "R1(config-line)",
         "pergunta": "Sair da configuração de linha",
         "resposta": "exit"
-    }
+    },
     # --- Step 2a: Configurar Loopback 0 ---
     {
         "contexto": "R1(config)",
