@@ -266,7 +266,7 @@ desafios = [
         "contexto": "R1(config-if)",
         "pergunta": "Ligar a interface física (necessário para subinterfaces funcionarem)",
         "resposta": "no shutdown"
-    }
+    },
     # ==========================================
     # CONFIGURAÇÃO DO SWITCH 1 (S1)
     # ==========================================
