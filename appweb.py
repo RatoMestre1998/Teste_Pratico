@@ -10,8 +10,8 @@ desafios = [
     {
         "titulo": "Step 1a: Configurações Básicas do R1",
         "instrucoes": [
-            "1. Prevenir resolução DNS (no ip domain lookup)",
-            "2. Configurar Hostname R1",
+            "1. Prevent the router from attempting to resolve incorrectly entered commands as domain names.",
+            "2. Configure the R1 hostname.",
             "3. Banner MOTD '#Unauthorized Acess is Prohibited#'"
         ],
         "resposta_esperada": """no ip domain-lookup
@@ -21,10 +21,10 @@ banner motd #Unauthorized Acess is Prohibited#"""
     {
         "titulo": "Step 1b: Segurança de Passwords R1",
         "instrucoes": [
-            "1. Linha consola 0: password 'ciscoconpass', login, exit",
+            "1. Line console 0: password 'ciscoconpass', login, exit",
             "2. Enable secret 'ciscoenpass'",
-            "3. Encriptar passwords (service password-encryption)",
-            "4. Tamanho mínimo password 10 caracteres"
+            "3. Encrypt all clear text passwords.",
+            "4. Set the minimum length of newly created passwords to 10 characters."
         ],
         "resposta_esperada": """line console 0
 password ciscoconpass
@@ -37,11 +37,12 @@ security passwords min-length 10"""
     {
         "titulo": "Step 1c: Configuração SSH R1",
         "instrucoes": [
-            "1. Criar user 'admin' secret 'admin1pass'",
+            "1. Create user 'admin' secret 'admin1pass'",
             "2. Domain name 'ccna-ptsa.com'",
-            "3. Crypto key generate rsa (1024 bits)",
-            "4. SSH version 2",
-            "5. Linhas vty 0 15: login local, transport input ssh, exit"
+            "3. Create an RSA crypto key with a modulus of 1024 bits.",
+            "4. Ensure that more secure version of SSH will be used.",
+            "5. Configure the vty lines to authenticate logins against the local user database."
+            "6. Configure the vty lines to only accept connections over SSH."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
@@ -58,7 +59,7 @@ exit"""
     # STEP 2: R1 INTERFACES
     # -------------------------------------------------------------------------
     {
-        "titulo": "Step 2a: Interface Loopback 0",
+        "titulo": "Step 2a: Configure R1 with a loopback interface. Configure the loopback0 with IPv4 and IPv6 addressing according to the addressing table.",
         "instrucoes": [
             "Configurar Loopback 0:",
             "- Descrição 'Loopback'",
@@ -75,14 +76,15 @@ ipv6 address fe80::1 link-local
 exit"""
     },
     {
-        "titulo": "Step 2b: Subinterfaces (ROAS) - Parte 1",
+        "titulo": "Configure Router Subinterfaces",
         "instrucoes": [
-            "1. Ativar IPv6 unicast-routing",
-            "2. Configurar g0/0/1.2 (VLAN 2 - Bikes):",
-            "- Encapsulation dot1Q 2",
-            "- IP: 10.19.8.1 /26",
-            "- IPv6: ...:a::1/64",
-            "- IPv6 Link-local fe80::1"
+            "1. Prepare the router to be configured with IPv6 addresses on its interfaces.",
+            "2. Use the information in the Addressing Table and VLAN Table to configure subinterfaces on R1: ",
+            "- Interfaces should be configured with IPv4 and IPv6 addressing.",
+            "- All addressed interfaces should use fe80::1 as the link local address.",
+            "- Use the VLAN table to assign VLAN membership to the subinterfaces."
+            "3. Be sure to configure the native VLAN interface."
+            "4. Configure descriptions for all interfaces."
         ],
         "resposta_esperada": """ipv6 unicast-routing
 interface g0/0/1.2
