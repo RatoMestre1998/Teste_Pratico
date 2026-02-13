@@ -476,7 +476,7 @@ col1, col2 = st.columns([1, 1])
 with col1:
     st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{total_desafios}")
     st.markdown(f"### {desafio_atual['titulo']}")
-    st.info("Instruções:")
+    st.info("Instructions:")
     for instr in desafio_atual['instrucoes']:
         st.markdown(f"- {instr}")
     st.divider()
