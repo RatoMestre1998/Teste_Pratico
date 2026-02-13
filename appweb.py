@@ -509,7 +509,7 @@ def verificar_bloco():
     else:
         st.session_state.feedback = "Existem erros no bloco."
         st.session_state.erros = erros
-
+        
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
