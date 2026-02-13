@@ -357,21 +357,8 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
+# 2. LÓGICA DE VALIDAÇÃO E AJUDA
 # ==========================================
-
-# Dicionário de abreviaturas comuns movido para escopo global para ser usado nas duas funções
-ABREVIATURAS_CISCO = {
-    "ena": "enable", "conf": "configure", "t": "terminal",
-    "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
-    "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
-    "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
-    "add": "address", "desc": "description", "shut": "shutdown",
-    "no shut": "no shutdown", "exit": "exit", "log": "login",
-    "pass": "password", "enc": "encapsulation", "chan": "channel-group",
-    "ban": "banner", "motd": "motd", "sh": "show", "cop": "copy",
-    "run": "running-config", "start": "startup-config"
-}
 
 def normalizar_lista(texto):
     if not texto:
@@ -379,6 +366,7 @@ def normalizar_lista(texto):
     return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
 
 def comparar_comandos(user_line, target_line):
+    # Dicionário interno para expansão de comandos
     user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
     target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
     u_parts = user_line_norm.split()
@@ -400,24 +388,23 @@ def obter_ajuda_ios(linha_u, linha_g):
     """
     comando_parcial = linha_u.replace("?", "").strip()
     
-    # Se o utilizador escreveu apenas '?', mostra a linha inteira ou o inicio
     if not comando_parcial:
         return f"Ajuda: {linha_g}"
     
     u_parts = comando_parcial.split()
     t_parts = linha_g.split()
     
-    # Se já escreveu tudo
-    if len(u_parts) >= len(t_parts) and not linha_u.endswith("?"): 
-         return "Ajuda: <cr>"
+    if len(u_parts) > len(t_parts):
+        return "Ajuda: <cr> (Linha completa, pressione Enter para validar)"
 
-    # Se estamos a meio de uma palavra (ex: 'ban?') -> Completar palavra atual
     indice_atual = len(u_parts) - 1
+    
+    # Se estamos a completar uma palavra (ex: ban?)
     if not linha_u.endswith(" ?") and linha_u.endswith("?"):
         if indice_atual < len(t_parts):
             return f"Ajuda: {t_parts[indice_atual]}"
     
-    # Se estamos a pedir o próximo argumento (ex: 'banner ?')
+    # Se estamos a pedir o próximo argumento (ex: banner ?)
     if linha_u.endswith(" ?") or (len(u_parts) < len(t_parts)):
         proximo_indice = len(u_parts)
         if proximo_indice < len(t_parts):
@@ -426,10 +413,8 @@ def obter_ajuda_ios(linha_u, linha_g):
     return f"Ajuda: {linha_g}"
 
 def navegar(direcao):
-    idx_atual = st.session_state.indice_atual
-    st.session_state.respostas_guardadas[idx_atual] = st.session_state.resposta_temp
-    
-    novo_indice = idx_atual + direcao
+    st.session_state.respostas_guardadas[st.session_state.indice_atual] = st.session_state.resposta_temp
+    novo_indice = st.session_state.indice_atual + direcao
     if 0 <= novo_indice < len(desafios):
         st.session_state.indice_atual = novo_indice
         st.session_state.feedback = ""
@@ -441,6 +426,10 @@ def limpar_resposta_atual():
     st.session_state.erros = []
 
 def verificar_bloco():
+    """
+    Função híbrida: Se a última linha tiver '?', dá ajuda. 
+    Caso contrário, valida o bloco todo.
+    """
     idx = st.session_state.indice_atual
     desafio = desafios[idx]
     user_text = st.session_state.resposta_temp
@@ -449,17 +438,14 @@ def verificar_bloco():
     linhas_user_raw = user_text.strip().split('\n')
     linhas_gabarito_raw = desafio['resposta_esperada'].strip().split('\n')
 
-    # --- LOGICA DO PONTO DE INTERROGACAO ---
+    # --- DETEÇÃO DE PEDIDO DE AJUDA ---
     if linhas_user_raw and linhas_user_raw[-1].strip().endswith("?"):
         ultima_linha = linhas_user_raw[-1].strip().lower()
         termo_busca = ultima_linha.replace("?", "").strip().split()
         
         linha_alvo = None
-        
-        # 1. Tenta encontrar a linha correspondente pelo contexto (primeira palavra)
         if termo_busca:
             primeira_palavra = termo_busca[0]
-            # Resolve abreviatura se existir
             if primeira_palavra in ABREVIATURAS_CISCO:
                 primeira_palavra = ABREVIATURAS_CISCO[primeira_palavra]
             
@@ -469,20 +455,18 @@ def verificar_bloco():
                     linha_alvo = g_line
                     break
         
-        # 2. Se não encontrou pelo contexto, usa o indice da linha (fallback)
         if not linha_alvo:
             num_linha = len(linhas_user_raw) - 1
             if num_linha < len(linhas_gabarito_raw):
                 linha_alvo = linhas_gabarito_raw[num_linha]
 
         if linha_alvo:
-            ajuda = obter_ajuda_ios(ultima_linha, linha_alvo.lower())
-            st.session_state.feedback = ajuda
+            st.session_state.feedback = obter_ajuda_ios(ultima_linha, linha_alvo.lower())
         else:
-            st.session_state.feedback = "Ajuda: Comando não encontrado no gabarito ou bloco terminado."
+            st.session_state.feedback = "Ajuda: Comando não encontrado no contexto atual."
         return
 
-    # --- LOGICA DE VALIDACAO NORMAL ---
+    # --- VALIDAÇÃO NORMAL DO BLOCO ---
     linhas_user = normalizar_lista(user_text)
     linhas_gabarito = normalizar_lista(desafio['resposta_esperada'])
     
@@ -500,7 +484,7 @@ def verificar_bloco():
             continue
         if not comparar_comandos(linhas_user[i], linhas_gabarito[i]):
             tudo_correto = False
-            erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}' -> Esperado algo como '{linhas_gabarito[i]}'")
+            erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}'")
 
     if tudo_correto:
         st.session_state.feedback = "BLOCO CORRETO! Muito bem."
@@ -509,13 +493,13 @@ def verificar_bloco():
     else:
         st.session_state.feedback = "Existem erros no bloco."
         st.session_state.erros = erros
-        
+
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
-# Inicialização de variáveis de estado
+# Inicialização de variáveis (Dicionário de abreviaturas deve estar definido no topo)
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'concluidos' not in st.session_state:
@@ -556,10 +540,9 @@ with col1:
 with col2:
     st.subheader("Terminal")
     
-    # Início do formulário para capturar CTRL+Enter
     with st.form(key='terminal_form', clear_on_submit=False):
         st.text_area(
-            "Introduza os comandos (1 por linha). Use CTRL+Enter para validar ou pedir ajuda:", 
+            "Consola (Escreva '?' + CTRL+Enter para ajuda, ou apenas CTRL+Enter para validar):", 
             value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
             key="resposta_temp",
             height=300
@@ -567,15 +550,13 @@ with col2:
         
         c_val, c_res = st.columns(2)
         with c_val:
-            # Botão principal de submissão (Ativado pelo CTRL+Enter)
-            st.form_submit_button("Validar Bloco / Ajuda", on_click=verificar_bloco)
+            # O primeiro form_submit_button é o que o CTRL+Enter aciona por defeito
+            st.form_submit_button("Submeter / Ajuda", on_click=verificar_bloco)
         with c_res:
-            # CORREÇÃO: Alterado de st.button para st.form_submit_button
-            st.form_submit_button("Limpar Resposta", on_click=limpar_resposta_atual)
+            st.form_submit_button("Limpar Terminal", on_click=limpar_resposta_atual)
     
-    # Exibição de Feedback fora do formulário para atualização imediata
     if st.session_state.feedback:
-        if "BLOCO CORRETO" in st.session_state.feedback:
+        if "CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
         elif "Ajuda:" in st.session_state.feedback:
             st.info(st.session_state.feedback)
