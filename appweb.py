@@ -545,9 +545,9 @@ with col1:
     # Navegação
     c_prev, c_next = st.columns(2)
     with c_prev:
-        st.button("⬅️ Previous", on_click=navegar, args=(-1,), disabled=(st.session_state.indice_atual == 0))
+        st.button("⬅️ Anterior", on_click=navegar, args=(-1,), disabled=(st.session_state.indice_atual == 0))
     with c_next:
-        st.button("Next ➡️", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == len(desafios)-1))
+        st.button("Seguinte ➡️", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == len(desafios)-1))
 
 with col2:
     st.subheader("Terminal")
