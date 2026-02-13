@@ -579,5 +579,3 @@ with col2:
     st.divider()
     with st.expander("Ver Solução Completa"):
         st.code(desafio_atual['resposta_esperada'])
-
-Consegues atribuir um valor a cada parte do teste concluído e, no final, a percentagem de 100% de quanto foi feito?
