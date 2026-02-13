@@ -357,7 +357,7 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO E UTILITÁRIOS
+# 2. LÓGICA DE VALIDAÇÃO E PERSISTÊNCIA
 # ==========================================
 
 def normalizar_lista(texto):
@@ -366,7 +366,6 @@ def normalizar_lista(texto):
     return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
 
 def comparar_comandos(user_line, target_line):
-    # Dicionário de abreviaturas comuns
     abreviaturas = {
         "ena": "enable", "conf": "configure", "t": "terminal",
         "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
@@ -376,11 +375,6 @@ def comparar_comandos(user_line, target_line):
         "no shut": "no shutdown", "exit": "exit", "log": "login",
         "pass": "password", "enc": "encapsulation", "chan": "channel-group"
     }
-
-    u_parts = user_line.split()
-    t_parts = target_line.split()
-
-    # Tentativa de resolver colagens como g0/0/1
     user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
     target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
     u_parts = user_line_norm.split()
@@ -397,19 +391,29 @@ def comparar_comandos(user_line, target_line):
     return True
 
 def navegar(direcao):
-    novo_indice = st.session_state.indice_atual + direcao
+    # ANTES de navegar, guardamos o que está na text_area atual
+    idx_atual = st.session_state.indice_atual
+    st.session_state.respostas_guardadas[idx_atual] = st.session_state.resposta_temp
+    
+    novo_indice = idx_atual + direcao
     if 0 <= novo_indice < len(desafios):
         st.session_state.indice_atual = novo_indice
-        st.session_state.resposta_user = ""
+        # Limpa feedbacks ao mudar, mas o texto será recuperado pelo st.session_state
         st.session_state.feedback = ""
         st.session_state.erros = []
 
+def limpar_resposta_atual():
+    st.session_state.respostas_guardadas[st.session_state.indice_atual] = ""
+    st.session_state.feedback = ""
+    st.session_state.erros = []
+
 def verificar_bloco():
     idx = st.session_state.indice_atual
-    desafio = desafios[idx]
-    user_text = st.session_state.resposta_user
-    resposta_esperada = desafio['resposta_esperada']
+    # Usamos o valor que está na área de texto no momento do clique
+    user_text = st.session_state.resposta_temp
+    st.session_state.respostas_guardadas[idx] = user_text # Grava a tentativa
     
+    resposta_esperada = desafios[idx]['resposta_esperada']
     linhas_user = normalizar_lista(user_text)
     linhas_gabarito = normalizar_lista(resposta_esperada)
     
@@ -420,20 +424,14 @@ def verificar_bloco():
 
     erros = []
     tudo_correto = True
-    
     for i in range(len(linhas_gabarito)):
         if i >= len(linhas_user):
             tudo_correto = False
             erros.append(f"Linha {i+1}: Falta o comando '{linhas_gabarito[i]}'")
             continue
-        
         if not comparar_comandos(linhas_user[i], linhas_gabarito[i]):
             tudo_correto = False
             erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}' -> Esperado algo como '{linhas_gabarito[i]}'")
-
-    if len(linhas_user) > len(linhas_gabarito):
-        tudo_correto = False
-        erros.append(f"Linha {len(linhas_gabarito)+1}: Comando extra não necessário.")
 
     if tudo_correto:
         st.session_state.feedback = "BLOCO CORRETO! Muito bem."
@@ -446,22 +444,22 @@ def verificar_bloco():
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
-
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
-# Inicialização de variáveis
+# Inicialização de variáveis de estado
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
-if 'resposta_user' not in st.session_state:
-    st.session_state.resposta_user = ""
+if 'concluidos' not in st.session_state:
+    st.session_state.concluidos = set()
 if 'feedback' not in st.session_state:
     st.session_state.feedback = ""
 if 'erros' not in st.session_state:
     st.session_state.erros = []
-if 'concluidos' not in st.session_state:
-    st.session_state.concluidos = set()
+# NOVO: Dicionário para reter as respostas de cada tarefa
+if 'respostas_guardadas' not in st.session_state:
+    st.session_state.respostas_guardadas = {i: "" for i in range(len(desafios))}
 
-# Cálculo de pontuação
+# Cálculo de progresso
 total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
 percentagem = (concluidos_count / total_desafios) * 100
@@ -470,8 +468,7 @@ st.title("Modo Rato da Cisco")
 st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
 st.progress(percentagem / 100)
 
-if percentagem == 100:
-    st.success("Parabéns! Teste concluído com 100%.")
+
 
 desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
@@ -482,7 +479,6 @@ with col1:
     st.info("Instructions:")
     for instr in desafio_atual['instrucoes']:
         st.markdown(f"- {instr}")
-    
     st.divider()
     
     c_prev, c_next = st.columns(2)
@@ -493,18 +489,27 @@ with col1:
 
 with col2:
     st.subheader("Terminal")
-    with st.form(key='bloco_form'):
-        st.text_area("Introduza os comandos (1 por linha):", key="resposta_user", height=300)
-        st.form_submit_button("Validar Bloco", on_click=verificar_bloco)
+    # A text_area carrega o valor que está no dicionário respostas_guardadas
+    st.text_area(
+        "Introduza os comandos (1 por linha):", 
+        value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
+        key="resposta_temp", # Chave temporária para capturar o input atual
+        height=300
+    )
+    
+    c_val, c_res = st.columns(2)
+    with c_val:
+        st.button("Validar Bloco", on_click=verificar_bloco)
+    with c_res:
+        st.button("Limpar Resposta", on_click=limpar_resposta_atual)
     
     if st.session_state.feedback:
         if "BLOCO CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
-            st.button("Avançar para o seguinte", on_click=navegar, args=(1,))
         else:
             st.error(st.session_state.feedback)
             if st.session_state.erros:
-                with st.expander("Detalhes do erro"):
+                with st.expander("View Error Details"):
                     for erro in st.session_state.erros:
                         st.write(erro)
 
