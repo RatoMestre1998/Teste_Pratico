@@ -7,7 +7,7 @@ desafios = [
     {
         "titulo": "Step 1: Configure R1 Basic Settings and Device Hardening (Part A)",
         "instrucoes": [
-            "a. Configure basic settings.",
+            "A. Configure basic settings.",
             "- Prevent the router from attempting to resolve incorrectly entered commands as domain names.",
             "- Configure the R1 hostname.",
             "- Configure an appropriate MOTD banner.",
