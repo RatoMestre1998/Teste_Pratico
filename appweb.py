@@ -4,9 +4,6 @@ import streamlit as st
 # 1. BASE DE DADOS (BLOCOS DE COMANDOS)
 # ==========================================
 desafios = [
-    # -------------------------------------------------------------------------
-    # STEP 1: R1 BASIC SETTINGS
-    # -------------------------------------------------------------------------
     {
         "titulo": "Step 1: Configure R1 Basic Settings and Device Hardening (Part A)",
         "instrucoes": [
@@ -58,10 +55,6 @@ login local
 transport input ssh
 exit"""
     },
-
-    # -------------------------------------------------------------------------
-    # STEP 2: R1 INTERFACES
-    # -------------------------------------------------------------------------
     {
         "titulo": "Step 2a: Configure R1 with a loopback interface",
         "instrucoes": [
@@ -140,22 +133,12 @@ description Native
 interface g0/0/1
 no shutdown"""
     },
-
-    # -------------------------------------------------------------------------
-    # STEP 3: SWITCH 1 (S1)
-    # -------------------------------------------------------------------------
     {
         "titulo": "Step 3: Configure S1 Basic Settings & Hardening (a, b)",
         "instrucoes": [
             "Perform these tasks on S1:",
-            "a. Basic Settings:",
-            "- No ip domain lookup",
-            "- Hostname S1",
-            "- Banner motd '#Unauthorized Access is Prohibitted!#'",
-            "b. Device Hardening:",
-            "- Console 0: password 'ciscoconpass', login",
-            "- Enable secret 'ciscoenpass'",
-            "- Service password-encryption"
+            "a. Basic Settings: No ip domain lookup, Hostname S1, Banner MOTD.",
+            "b. Device Hardening: Console password, Enable secret, Password encryption."
         ],
         "resposta_esperada": """no ip domain-lookup
 hostname S1
@@ -170,12 +153,7 @@ service password-encryption"""
     {
         "titulo": "Step 3c: Configure SSH on S1",
         "instrucoes": [
-            "c. Configure SSH on S1:",
-            "- User 'admin', secret 'admin1pass'",
-            "- Domain name 'ccna-ptsa.com'",
-            "- RSA key 1024 bits",
-            "- SSH version 2",
-            "- VTY 0 15: login local, transport input ssh"
+            "c. Configure SSH on S1: Admin user, Domain name, RSA key 1024, SSH version 2, VTY authenticate local and SSH only."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
@@ -187,22 +165,10 @@ login local
 transport input ssh
 exit"""
     },
-
-    # -------------------------------------------------------------------------
-    # STEP 3: SWITCH 2 (S2)
-    # -------------------------------------------------------------------------
     {
         "titulo": "Step 3: Configure S2 Basic Settings & Hardening (a, b)",
         "instrucoes": [
-            "Perform these tasks on S2:",
-            "a. Basic Settings:",
-            "- No ip domain lookup",
-            "- Hostname S2",
-            "- Banner motd '#Unauthorized Access is Prohibitted!#'",
-            "b. Device Hardening:",
-            "- Console 0: password 'ciscoconpass', login",
-            "- Enable secret 'ciscoenpass'",
-            "- Service password-encryption"
+            "Perform these tasks on S2: No ip domain lookup, Hostname S2, Banner MOTD, Console password, Enable secret, Password encryption."
         ],
         "resposta_esperada": """no ip domain-lookup
 hostname S2
@@ -217,12 +183,7 @@ service password-encryption"""
     {
         "titulo": "Step 3c: Configure SSH on S2",
         "instrucoes": [
-            "c. Configure SSH on S2:",
-            "- User 'admin', secret 'admin1pass'",
-            "- Domain name 'ccna-ptsa.com'",
-            "- RSA key 1024 bits",
-            "- SSH version 2",
-            "- VTY 0 15: login local, transport input ssh"
+            "c. Configure SSH on S2: Admin user, Domain name, RSA key 1024, SSH version 2, VTY authenticate local and SSH only."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
@@ -234,19 +195,11 @@ login local
 transport input ssh
 exit"""
     },
-
-    # -------------------------------------------------------------------------
-    # STEP 4: SVIs
-    # -------------------------------------------------------------------------
     {
         "titulo": "Step 4: Configure SVIs on S1",
         "instrucoes": [
-            "a. Configure SVI for Management VLAN 4 on S1:",
-            "- IP: 10.19.8.98 /29 (255.255.255.248)",
-            "- Description: Management Interface",
-            "- No shutdown",
-            "b. Configure Default Gateway on S1:",
-            "- IP: 10.19.8.97"
+            "a. Configure SVI for Management VLAN 4 on S1: IP 10.19.8.98/29, Description, No shutdown.",
+            "b. Configure Default Gateway on S1: IP 10.19.8.97"
         ],
         "resposta_esperada": """interface vlan 4
 ip address 10.19.8.98 255.255.255.248
@@ -258,12 +211,8 @@ ip default-gateway 10.19.8.97"""
     {
         "titulo": "Step 4: Configure SVIs on S2",
         "instrucoes": [
-            "a. Configure SVI for Management VLAN 4 on S2:",
-            "- IP: 10.19.8.99 /29 (255.255.255.248)",
-            "- Description: Management Interface",
-            "- No shutdown",
-            "b. Configure Default Gateway on S2:",
-            "- IP: 10.19.8.97"
+            "a. Configure SVI for Management VLAN 4 on S2: IP 10.19.8.99/29, Description, No shutdown.",
+            "b. Configure Default Gateway on S2: IP 10.19.8.97"
         ],
         "resposta_esperada": """interface vlan 4
 ip address 10.19.8.99 255.255.255.248
@@ -272,19 +221,10 @@ no shutdown
 exit
 ip default-gateway 10.19.8.97"""
     },
-
-    # -------------------------------------------------------------------------
-    # PART 3: NETWORK INFRASTRUCTURE
-    # -------------------------------------------------------------------------
     {
         "titulo": "Part 3 Step 1: Configure VLANs and Trunking (S1)",
         "instrucoes": [
-            "On S1:",
-            "a. Create VLANs 2, 3, 4, 5, 6 with names (Bikes, Trikes, Management, Parking, Native)",
-            "b. Create 802.1Q VLAN trunks on f0/1 and f0/2.",
-            "- Native VLAN 6",
-            "- Allowed VLANs 2,3,4,5,6",
-            "c. Configure f0/5 as trunk (Native 6, Allowed 2,3,4,5,6)"
+            "On S1: Create VLANs 2-6 with names, Configure trunks on f0/1, f0/2, and f0/5 with native VLAN 6 and allowed VLANs 2-6."
         ],
         "resposta_esperada": """vlan 2
 name Bikes
@@ -310,11 +250,7 @@ exit"""
     {
         "titulo": "Part 3 Step 1: Configure VLANs and Trunking (S2)",
         "instrucoes": [
-            "On S2:",
-            "a. Create VLANs 2, 3, 4, 5, 6 with names (Bikes, Trikes, Management, Parking, Native)",
-            "b. Create 802.1Q VLAN trunks on f0/1 and f0/2.",
-            "- Native VLAN 6",
-            "- Allowed VLANs 2,3,4,5,6"
+            "On S2: Create VLANs 2-6 with names, Configure trunks on f0/1 and f0/2 with native VLAN 6 and allowed VLANs 2-6."
         ],
         "resposta_esperada": """vlan 2
 name Bikes
@@ -335,9 +271,7 @@ exit"""
     {
         "titulo": "Part 3 Step 2: Configure Etherchannel (S1)",
         "instrucoes": [
-            "On S1:",
-            "Create Layer 2 EtherChannel group 1 using interfaces f0/1 and f0/2.",
-            "- Mode: LACP (active)"
+            "On S1: Create EtherChannel group 1 using f0/1 and f0/2 in LACP active mode."
         ],
         "resposta_esperada": """interface range f0/1-2
 channel-group 1 mode active
@@ -347,9 +281,7 @@ exit"""
     {
         "titulo": "Part 3 Step 2: Configure Etherchannel (S2)",
         "instrucoes": [
-            "On S2:",
-            "Create Layer 2 EtherChannel group 1 using interfaces f0/1 and f0/2.",
-            "- Mode: LACP (active)"
+            "On S2: Create EtherChannel group 1 using f0/1 and f0/2 in LACP active mode."
         ],
         "resposta_esperada": """interface range f0/1-2
 channel-group 1 mode active
@@ -359,11 +291,7 @@ exit"""
     {
         "titulo": "Part 3 Step 3: Configure Switchports (S1)",
         "instrucoes": [
-            "On S1:",
-            "a. Configure f0/6 (Host): Access VLAN 2",
-            "b. Configure port security on f0/6 (Max 3 MACs)",
-            "c. Assign unused ports (f0/3-4, f0/7-24, g0/1-2) to VLAN 5.",
-            "d. Configure description 'Unused Interfaces' and shutdown."
+            "On S1: Configure f0/6 for access VLAN 2 with port security (max 3), and unused ports to VLAN 5 and shutdown."
         ],
         "resposta_esperada": """interface f0/6
 description host
@@ -380,11 +308,7 @@ shutdown"""
     {
         "titulo": "Part 3 Step 3: Configure Switchports (S2)",
         "instrucoes": [
-            "On S2:",
-            "a. Configure f0/18 (Host): Access VLAN 3",
-            "b. Configure port security on f0/18 (Max 3 MACs)",
-            "c. Assign unused ports (f0/3-17, f0/19-24, g0/1-2) to VLAN 5.",
-            "d. Configure description 'Unused Interfaces' and shutdown."
+            "On S2: Configure f0/18 for access VLAN 3 with port security (max 3), and unused ports to VLAN 5 and shutdown."
         ],
         "resposta_esperada": """interface f0/18
 switchport mode access
@@ -397,15 +321,11 @@ switchport access vlan 5
 description Unused Interfaces
 shutdown"""
     },
-
-    # -------------------------------------------------------------------------
-    # PART 4: HOST SUPPORT (ROUTING & DHCP)
-    # -------------------------------------------------------------------------
     {
         "titulo": "Part 4 Step 1: Configure Default Routing on R1",
         "instrucoes": [
-            "a. Configure an IPv4 default route using Lo0 as exit interface.",
-            "b. Configure an IPv6 default route using Lo0 as exit interface."
+            "a. Configure IPv4 default route using Lo0.",
+            "b. Configure IPv6 default route using Lo0."
         ],
         "resposta_esperada": """ip route 0.0.0.0 0.0.0.0 loopback 0
 ipv6 route ::/0 loopback 0"""
@@ -413,11 +333,7 @@ ipv6 route ::/0 loopback 0"""
     {
         "titulo": "Part 4 Step 2: Configure IPv4 DHCP for VLAN 2 (R1)",
         "instrucoes": [
-            "a. Exclude addresses .1 to .52",
-            "b. Create DHCP pool 'CCNA-A'.",
-            "c. Network 10.19.8.0 /26",
-            "d. Default router: 10.19.8.1",
-            "e. Domain name: ccna-a.net"
+            "a. Exclude addresses .1 to .52. b. Create pool CCNA-A, network 10.19.8.0/26, gateway .1, domain ccna-a.net."
         ],
         "resposta_esperada": """ip dhcp excluded-address 10.19.8.1 10.19.8.52
 ip dhcp pool CCNA-A
@@ -429,11 +345,7 @@ exit"""
     {
         "titulo": "Part 4 Step 3: Configure IPv4 DHCP for VLAN 3 (R1)",
         "instrucoes": [
-            "a. Exclude addresses .65 to .84",
-            "b. Create DHCP pool 'CCNA-B'.",
-            "c. Network 10.19.8.64 /27",
-            "d. Default router: 10.19.8.65",
-            "e. Domain name: ccna-b.net"
+            "a. Exclude addresses .65 to .84. b. Create pool CCNA-B, network 10.19.8.64/27, gateway .65, domain ccna-b.net."
         ],
         "resposta_esperada": """ip dhcp excluded-address 10.19.8.65 10.19.8.84
 ip dhcp pool CCNA-B
@@ -445,52 +357,61 @@ exit"""
 ]
 
 # ==========================================
-# 2. LÓGICA DE VALIDAÇÃO (VERSÃO ABREVIADA)
+# 2. LÓGICA DE VALIDAÇÃO E UTILITÁRIOS
 # ==========================================
 
+def normalizar_lista(texto):
+    if not texto:
+        return []
+    return [linha.strip().lower() for linha in texto.strip().split('\n') if linha.strip()]
+
 def comparar_comandos(user_line, target_line):
-    """
-    Verifica se a linha do utilizador coincide com a esperada, 
-    permitindo abreviaturas (ex: 'int' para 'interface').
-    """
+    # Dicionário de abreviaturas comuns
+    abreviaturas = {
+        "ena": "enable", "conf": "configure", "t": "terminal",
+        "int": "interface", "fa": "fastethernet", "gi": "gigabitethernet",
+        "g": "gigabitethernet", "f": "fastethernet", "sw": "switchport",
+        "acc": "access", "tru": "trunk", "nat": "native", "all": "allowed",
+        "add": "address", "desc": "description", "shut": "shutdown",
+        "no shut": "no shutdown", "exit": "exit", "log": "login",
+        "pass": "password", "enc": "encapsulation", "chan": "channel-group"
+    }
+
     u_parts = user_line.split()
     t_parts = target_line.split()
 
-    # Se o número de palavras for muito diferente, provavelmente está errado
+    # Tentativa de resolver colagens como g0/0/1
+    user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
+    target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
+    u_parts = user_line_norm.split()
+    t_parts = target_line_norm.split()
+
     if len(u_parts) != len(t_parts):
-        # Caso especial: 'conf t' (2 palavras) para 'configure terminal' (2 palavras) - ok
-        # Caso especial: 'int g0/0' (2 palavras) para 'interface gigabitethernet 0/0' (3 palavras)
-        # Vamos normalizar termos colados como g0/0/1
-        user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
-        target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
-        u_parts = user_line_norm.split()
-        t_parts = target_line_norm.split()
-        
-        if len(u_parts) != len(t_parts):
-            return False
+        return False
 
     for u_word, t_word in zip(u_parts, t_parts):
-        # Normaliza abreviaturas comuns antes da comparação de prefixo
-        u_word = u_word.replace("int", "interface").replace("conf", "configure")
-        u_word = u_word.replace("t", "terminal").replace("sw", "switchport")
-        u_word = u_word.replace("add", "address").replace("desc", "description")
-        u_word = u_word.replace("shut", "shutdown").replace("ena", "enable")
-
-        # Verifica se a palavra do utilizador é um prefixo da palavra correta
+        if u_word in abreviaturas:
+            u_word = abreviaturas[u_word]
         if not t_word.startswith(u_word):
             return False
-            
     return True
+
+def navegar(direcao):
+    novo_indice = st.session_state.indice_atual + direcao
+    if 0 <= novo_indice < len(desafios):
+        st.session_state.indice_atual = novo_indice
+        st.session_state.resposta_user = ""
+        st.session_state.feedback = ""
+        st.session_state.erros = []
 
 def verificar_bloco():
     idx = st.session_state.indice_atual
     desafio = desafios[idx]
-    
     user_text = st.session_state.resposta_user
     resposta_esperada = desafio['resposta_esperada']
     
-    linhas_user = [l.strip().lower() for l in user_text.strip().split('\n') if l.strip()]
-    linhas_gabarito = [l.strip().lower() for l in resposta_esperada.strip().split('\n') if l.strip()]
+    linhas_user = normalizar_lista(user_text)
+    linhas_gabarito = normalizar_lista(resposta_esperada)
     
     if not linhas_user:
         st.session_state.feedback = "A caixa está vazia."
@@ -500,24 +421,19 @@ def verificar_bloco():
     erros = []
     tudo_correto = True
     
-    # Compara linha a linha usando a nova lógica flexível
     for i in range(len(linhas_gabarito)):
         if i >= len(linhas_user):
             tudo_correto = False
             erros.append(f"Linha {i+1}: Falta o comando '{linhas_gabarito[i]}'")
             continue
-            
-        lu = linhas_user[i]
-        lg = linhas_gabarito[i]
-
-        if not comparar_comandos(lu, lg):
+        
+        if not comparar_comandos(linhas_user[i], linhas_gabarito[i]):
             tudo_correto = False
-            erros.append(f"Linha {i+1}: Escreveste '{lu}' -> Não reconhecido para '{lg}'")
+            erros.append(f"Linha {i+1}: Erro em '{linhas_user[i]}' -> Esperado algo como '{linhas_gabarito[i]}'")
 
-    # Verifica se há linhas a mais
     if len(linhas_user) > len(linhas_gabarito):
         tudo_correto = False
-        erros.append(f"Escreveste {len(linhas_user)} linhas, mas apenas {len(linhas_gabarito)} são esperadas.")
+        erros.append(f"Linha {len(linhas_gabarito)+1}: Comando extra não necessário.")
 
     if tudo_correto:
         st.session_state.feedback = "BLOCO CORRETO! Muito bem."
@@ -526,11 +442,14 @@ def verificar_bloco():
     else:
         st.session_state.feedback = "Existem erros no bloco."
         st.session_state.erros = erros
+
 # ==========================================
 # 3. INTERFACE STREAMLIT
 # ==========================================
+
 st.set_page_config(page_title="Cisco Skills Assessment", layout="wide")
 
+# Inicialização de variáveis
 if 'indice_atual' not in st.session_state:
     st.session_state.indice_atual = 0
 if 'resposta_user' not in st.session_state:
@@ -542,71 +461,53 @@ if 'erros' not in st.session_state:
 if 'concluidos' not in st.session_state:
     st.session_state.concluidos = set()
 
-# Cálculo de progresso
+# Cálculo de pontuação
 total_desafios = len(desafios)
 concluidos_count = len(st.session_state.concluidos)
-percentagem_conclusao = (concluidos_count / total_desafios) * 100
+percentagem = (concluidos_count / total_desafios) * 100
 
-# Cabeçalho
 st.title("Modo Rato da Cisco")
+st.write(f"Conclusão: {percentagem:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
+st.progress(percentagem / 100)
 
-# Exibição da percentagem e barra de progresso
-st.write(f"Conclusão: {percentagem_conclusao:.2f}% ({concluidos_count} de {total_desafios} tarefas)")
-st.progress(percentagem_conclusao / 100)
+if percentagem == 100:
+    st.success("Parabéns! Teste concluído com 100%.")
 
-if percentagem_conclusao == 100:
-    st.success("Parabéns! Completou todas as tarefas do teste com sucesso.")
-
-# Dados do Desafio Atual
 desafio_atual = desafios[st.session_state.indice_atual]
-
-# Layout de Colunas
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{len(desafios)}")
+    st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{total_desafios}")
     st.markdown(f"### {desafio_atual['titulo']}")
-    
     st.info("Instructions:")
     for instr in desafio_atual['instrucoes']:
         st.markdown(f"- {instr}")
-        
+    
     st.divider()
     
-    # Navegação
     c_prev, c_next = st.columns(2)
     with c_prev:
         st.button("Anterior", on_click=navegar, args=(-1,), disabled=(st.session_state.indice_atual == 0))
     with c_next:
-        st.button("Seguinte", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == len(desafios)-1))
+        st.button("Seguinte", on_click=navegar, args=(1,), disabled=(st.session_state.indice_atual == total_desafios-1))
 
 with col2:
     st.subheader("Terminal")
-    
     with st.form(key='bloco_form'):
-        st.text_area(
-            "Introduza os comandos (1 por linha):",
-            key="resposta_user",
-            height=300,
-            placeholder="Example:\nenable\nconfigure terminal\n..."
-        )
+        st.text_area("Introduza os comandos (1 por linha):", key="resposta_user", height=300)
         st.form_submit_button("Validar Bloco", on_click=verificar_bloco)
     
-    # Área de Feedback
     if st.session_state.feedback:
         if "BLOCO CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
-            st.button("Avançar para o próximo passo", on_click=navegar, args=(1,))
+            st.button("Avançar para o seguinte", on_click=navegar, args=(1,))
         else:
             st.error(st.session_state.feedback)
             if st.session_state.erros:
-                with st.expander("View Error Details"):
+                with st.expander("Detalhes do erro"):
                     for erro in st.session_state.erros:
                         st.write(erro)
-    
-    # -------------------------------------------------------------
-    # BOTÃO DE SOLUÇÃO (AGORA SEMPRE VISÍVEL FORA DO IF)
-    # -------------------------------------------------------------
+
     st.divider()
     with st.expander("Ver Solução Completa"):
         st.code(desafio_atual['resposta_esperada'])
