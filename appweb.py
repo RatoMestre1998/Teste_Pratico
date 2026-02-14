@@ -188,7 +188,12 @@ service password-encryption"""
     {
         "titulo": "Step 3c: Configure SSH on S2",
         "instrucoes": [
-            "c. Configure SSH on S2: Admin user, Domain name, RSA key 1024, SSH version 2, VTY authenticate local and SSH only."
+            "c. Configure SSH on S2:", 
+            "- Admin user - admin", 
+            "- Domain name - ccna-ptsa.com", 
+            "- RSA key 1024", 
+            "- SSH version 2", 
+            "- VTY authenticate local (0-15) and SSH only."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
