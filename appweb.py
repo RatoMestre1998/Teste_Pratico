@@ -137,7 +137,7 @@ no shutdown"""
         "titulo": "Step 3: Configure S1 Basic Settings & Hardening (a, b)",
         "instrucoes": [
             "Perform these tasks on S1:",
-            "a. Basic Settings: No ip domain lookup, Hostname S1, Banner MOTD.",
+            "a. Basic Settings: No ip domain lookup, Hostname S1, Banner MOTD (#Unauthorized Access is Prohibitted!#).",
             "b. Device Hardening: Console password, Enable secret, Password encryption."
         ],
         "resposta_esperada": """no ip domain-lookup
