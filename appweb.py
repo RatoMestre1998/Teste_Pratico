@@ -138,7 +138,7 @@ no shutdown"""
         "instrucoes": [
             "Perform these tasks on S1:",
             "a. Basic Settings: No ip domain lookup, Hostname S1, Banner MOTD (#Unauthorized Access is Prohibitted!#).",
-            "b. Device Hardening: Console password, Enable secret, Password encryption."
+            "b. Device Hardening: Console password - ciscoconpass, Enable secret - ciscoenpass, Password encryption."
         ],
         "resposta_esperada": """no ip domain-lookup
 hostname S1
