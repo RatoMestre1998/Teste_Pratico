@@ -416,7 +416,16 @@ def navegar(direcao):
         st.session_state.erros = []
 
 def limpar_resposta_atual():
-    st.session_state.respostas_guardadas[st.session_state.indice_atual] = ""
+    idx = st.session_state.indice_atual
+    
+    # 1. Limpa a base de dados persistente
+    st.session_state.respostas_guardadas[idx] = ""
+    
+    # 2. IMPORTANTE: Força a limpeza do widget visual
+    if 'resposta_temp' in st.session_state:
+        st.session_state.resposta_temp = ""
+        
+    # 3. Limpa feedbacks visual
     st.session_state.feedback = ""
     st.session_state.erros = []
 
@@ -502,20 +511,23 @@ with col1:
 
 with col2:
     st.subheader("Terminal")
-    # A text_area carrega o valor que está no dicionário respostas_guardadas
-    st.text_area(
-        "Introduza os comandos (1 por linha):", 
-        value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
-        key="resposta_temp", # Chave temporária para capturar o input atual
-        height=300
-    )
     
-    c_val, c_res = st.columns(2)
-    with c_val:
-        st.button("Validar Bloco", on_click=verificar_bloco)
-    with c_res:
-        st.button("Limpar Resposta", on_click=limpar_resposta_atual)
-    
+    # O formulário gere o ENTER e os botões
+    with st.form(key='terminal_form', clear_on_submit=False):
+        st.text_area(
+            "Consola (Escreva '?' + CTRL+Enter para ajuda, ou apenas CTRL+Enter para validar):", 
+            # O value lê da base de dados, mas a key 'resposta_temp' tem prioridade se não for limpa
+            value=st.session_state.respostas_guardadas[st.session_state.indice_atual],
+            key="resposta_temp",
+            height=300
+        )
+        
+        c_val, c_res = st.columns(2)
+        with c_val:
+            st.form_submit_button("Submeter / Ajuda", on_click=verificar_bloco)
+        with c_res:
+            # Este botão chama a função corrigida acima
+            st.form_submit_button("Limpar Terminal", on_click=limpar_resposta_atual)
     if st.session_state.feedback:
         if "BLOCO CORRETO" in st.session_state.feedback:
             st.success(st.session_state.feedback)
