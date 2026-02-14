@@ -375,19 +375,32 @@ def comparar_comandos(user_line, target_line):
         "no shut": "no shutdown", "exit": "exit", "log": "login",
         "pass": "password", "enc": "encapsulation", "chan": "channel-group"
     }
-    user_line_norm = user_line.replace("g0", "g 0").replace("f0", "f 0")
-    target_line_norm = target_line.replace("g0", "g 0").replace("f0", "f 0")
-    u_parts = user_line_norm.split()
-    t_parts = target_line_norm.split()
+    
+    # 1. Removi o .replace("g0", "g 0") que estava a causar o erro
+    u_parts = user_line.strip().split()
+    t_parts = target_line.strip().split()
 
     if len(u_parts) != len(t_parts):
         return False
 
     for u_word, t_word in zip(u_parts, t_parts):
+        # 2. Primeiro verifica se são exatamente iguais (ex: "g0/0/1" == "g0/0/1")
+        if u_word == t_word:
+            continue
+            
+        # 3. Verifica se é uma abreviatura conhecida (ex: "int" -> "interface")
         if u_word in abreviaturas:
-            u_word = abreviaturas[u_word]
-        if not t_word.startswith(u_word):
-            return False
+            expandido = abreviaturas[u_word]
+            # Verifica se a palavra alvo começa com a expansão
+            if t_word.startswith(expandido):
+                continue
+        
+        # 4. Fallback: Verifica se é apenas um prefixo (ex: "inter" para "interface")
+        if t_word.startswith(u_word):
+            continue
+            
+        return False
+        
     return True
 
 def navegar(direcao):
