@@ -531,7 +531,7 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     # --- NOVO: Addressing Table em Expander ---
-    with st.expander("📋 Ver Tabela de Endereçamento e VLANs", expanded=False):
+    with st.expander("Addressing Table", expanded=False):
         st.markdown("""
         **VLAN Table**
         | VLAN | Name | Interface |
