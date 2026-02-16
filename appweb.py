@@ -94,7 +94,7 @@ exit"""
             "- Encapsulation dot1Q 2",
             "- Description: Bikes",
             "- IPv4: 10.19.8.1 /26 (255.255.255.192)",
-            "- IPv6: 2001:db8:acad:a::1/64",
+            "- IPv6: `2001:db8:acad:a::1`",
             "- IPv6 Link-Local: fe80::1"
         ],
         "resposta_esperada": """ipv6 unicast-routing
@@ -102,7 +102,7 @@ interface g0/0/1.2
 encapsulation dot1Q 2
 description Bikes
 ip address 10.19.8.1 255.255.255.192
-ipv6 address 2001:db8:acad:a::1/64
+ipv6 address `2001:db8:acad:a::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
@@ -112,7 +112,7 @@ ipv6 address fe80::1 link-local"""
             "- Encapsulation dot1Q 3",
             "- Description: Trikes",
             "- IPv4: 10.19.8.65 /27 (255.255.255.224)",
-            "- IPv6: 2001:db8:acad:b::1/64",
+            "- IPv6: `2001:db8:acad:b::1/64`",
             "- IPv6 Link-Local: fe80::1",
             "4. Configure subinterface g0/0/1.4 (VLAN 4 - Management):",
             "- Encapsulation dot1Q 4",
@@ -125,13 +125,13 @@ ipv6 address fe80::1 link-local"""
 encapsulation dot1Q 3
 description Trikes
 ip address 10.19.8.65 255.255.255.224
-ipv6 address 2001:db8:acad:b::1/64
+ipv6 address `2001:db8:acad:b::1/64`
 ipv6 address fe80::1 link-local
 interface g0/0/1.4
 encapsulation dot1Q 4
 description Management
 ip address 10.19.8.97 255.255.255.248
-ipv6 address 2001:db8:acad:c::1/64
+ipv6 address `2001:db8:acad:c::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
@@ -545,15 +545,15 @@ with col1:
         **Addressing Table**
         | Device | Interface | IPv4 Address | IPv6 Address | IPv6 Link-Local |
         |---|---|---|---|---|
-        | **R1** | G0/0/1.2 | 10.19.8.1 /26 | 2001:db8:acad:a::1 /64 | fe80::1 |
-        | | G0/0/1.3 | 10.19.8.65 /27 | 2001:db8:acad:b::1 /64 | fe80::1 |
-        | | G0/0/1.4 | 10.19.8.97 /29 | 2001:db8:acad:c::1 /64 | fe80::1 |
+        | **R1** | G0/0/1.2 | 10.19.8.1 /26 | `2001:db8:acad:a::1 /64` | fe80::1 |
+        | | G0/0/1.3 | 10.19.8.65 /27 | `2001:db8:acad:b::1 /64` | fe80::1 |
+        | | G0/0/1.4 | 10.19.8.97 /29 | `2001:db8:acad:c::1 /64` | fe80::1 |
         | | G0/0/1.6 | N/A | N/A | N/A |
         | | Lo0 | 209.165.201.1 /27 | 2001:db8:acad:209::1 /64 | fe80::1 |
         | **S1** | VLAN 4 | 10.19.8.98 /29 | - | - |
         | **S2** | VLAN 4 | 10.19.8.99 /29 | - | - |
-        | **PC-A** | NIC | DHCP | 2001:db8:acad:a::50 /64 | fe80::1 |
-        | **PC-B** | NIC | DHCP | 2001:db8:acad:b::50 /64 | fe80::1 |
+        | **PC-A** | NIC | DHCP | `2001:db8:acad:a::1 /64` | fe80::1 |
+        | **PC-B** | NIC | DHCP | `2001:db8:acad:b::50 /64` | fe80::1 |
         """)
 
     st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{len(desafios)}")
