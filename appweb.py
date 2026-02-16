@@ -73,11 +73,7 @@ exit"""
     {
         "titulo": "Step 2a: Configure R1 with a loopback interface",
         "instrucoes": [
-            "Configure R1 with a loopback interface. Configure the loopback0 with IPv4 and IPv6 addressing according to the addressing table.",
-            "- Description: Loopback",
-            "- IPv4: 209.165.201.1 /27 (255.255.255.224)",
-            "- IPv6: 2001:db8:acad:209::1/64",
-            "- IPv6 Link-Local: fe80::1"
+            "Configure R1 with a loopback interface. Configure the loopback0 with IPv4 and IPv6 addressing according to the addressing table."
         ],
         "resposta_esperada": """interface Loopback 0
 description Loopback
@@ -91,11 +87,11 @@ exit"""
         "instrucoes": [
             "1. Prepare the router to be configured with IPv6 addresses on its interfaces.",
             "2. Use the information in the Addressing Table and VLAN Table to configure subinterfaces on R1:",
-            "- Encapsulation dot1Q 2",
-            "- Description: Bikes",
-            "- IPv4: 10.19.8.1 /26 (255.255.255.192)",
-            "- IPv6: `2001:db8:acad:a::1`",
-            "- IPv6 Link-Local: fe80::1"
+            "- Interfaces should be configured with IPv4 and IPv6 addressing.",
+            "- All addressed interfaces should use fe80::1 as the link local address.",
+            "- Use the VLAN table to assign VLAN membership to the subinterfaces.",
+            "3. Be sure to configure the native VLAN interface.",
+            "4. Configure descriptions for all interfaces."
         ],
         "resposta_esperada": """ipv6 unicast-routing
 interface g0/0/1.2
@@ -106,20 +102,10 @@ ipv6 address `2001:db8:acad:a::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
-        "titulo": "Step 2b: Configure Router Subinterfaces (Part 2)",
+        "titulo": "Step 2.1b: Configure Router Subinterfaces",
         "instrucoes": [
-            "3. Configure subinterface g0/0/1.3 (VLAN 3 - Trikes):",
-            "- Encapsulation dot1Q 3",
-            "- Description: Trikes",
-            "- IPv4: 10.19.8.65 /27 (255.255.255.224)",
-            "- IPv6: `2001:db8:acad:b::1/64`",
-            "- IPv6 Link-Local: fe80::1",
-            "4. Configure subinterface g0/0/1.4 (VLAN 4 - Management):",
-            "- Encapsulation dot1Q 4",
-            "- Description: Management",
-            "- IPv4: 10.19.8.97 /29 (255.255.255.248)",
-            "- IPv6: 2001:db8:acad:c::1/64",
-            "- IPv6 Link-Local: fe80::1"
+            "3. Configure subinterface g0/0/1.3:",
+            "4. Configure subinterface g0/0/1.4:"
         ],
         "resposta_esperada": """interface g0/0/1.3
 encapsulation dot1Q 3
@@ -135,11 +121,9 @@ ipv6 address `2001:db8:acad:c::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
-        "titulo": "Step 2b: Configure Router Subinterfaces (Part 3 - Native)",
+        "titulo": "Step 2.2b: Configure Router Subinterfaces",
         "instrucoes": [
-            "5. Configure the native VLAN interface (g0/0/1.6):",
-            "- Encapsulation dot1Q 6 native",
-            "- Description: Native",
+            "5. Configure the native VLAN interface:",
             "6. Enable the physical interface g0/0/1."
         ],
         "resposta_esperada": """interface g0/0/1.6
@@ -149,11 +133,17 @@ interface g0/0/1
 no shutdown"""
     },
     {
-        "titulo": "Step 3: Configure S1 Basic Settings & Hardening (a, b)",
+        "titulo": "Step 3: Configure S1 Basic Settings & Hardening (a and b)",
         "instrucoes": [
-            "Perform these tasks on S1:",
-            "a. Basic Settings: No ip domain lookup, Hostname S1, Banner MOTD (#Unauthorized Access is Prohibitted!#).",
-            "b. Device Hardening: Console password - ciscoconpass, Enable secret - ciscoenpass, Password encryption."
+            "a. Configuration tasks for the switches S1 and S2 include the following:",
+            "1. Prevent the switches from attempting to resolve incorrectly entered commands as domain names.int",
+            "2. Configure the S1 or S2 hostname.",
+            "3. Configure an appropriate MOTD banner on both switches.(#Unauthorized Access is Prohibitted!#)",
+            " "
+            "b. b. Configure Device Hardening on S1 and S2",
+            "1. Configure the console password and enable connections.",
+            "2. Configure an enable secret password.",
+            "3. Encrypt all clear text passwords."
         ],
         "resposta_esperada": """no ip domain-lookup
 hostname S1
@@ -168,12 +158,14 @@ service password-encryption"""
     {
         "titulo": "Step 3c: Configure SSH on S1",
         "instrucoes": [
-            "c. Configure SSH on S1:",
-            "- Admin user",
-            "- Domain name",
-            "- RSA key 1024",
-            "- SSH version 2",
-            "- VTY authenticate local and SSH only."
+            "1. Create an administrative user in the local user database. ",
+            "- Username: admin",
+            "- Password: admin1pass",
+            "2. Configure the domain name as ccna-ptsa.com",
+            "3. Create an RSA crypto key with a modulus of 1024 bits.",
+            "4. Ensure that more secure version of SSH will be used.",
+            "5. Configure the vty lines to authenticate logins against the local user database.",
+            "6. Configure the vty lines to accept connections over SSH only."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
@@ -186,29 +178,16 @@ transport input ssh
 exit"""
     },
     {
-        "titulo": "Step 3: Configure S2 Basic Settings & Hardening (a, b)",
-        "instrucoes": [
-            "Perform these tasks on S2: No ip domain lookup, Hostname S2, Banner MOTD, Console password, Enable secret, Password encryption."
-        ],
-        "resposta_esperada": """no ip domain-lookup
-hostname S2
-banner motd #Unauthorized Access is Prohibitted!#
-line console 0
-password ciscoconpass
-login
-exit
-enable secret ciscoenpass
-service password-encryption"""
-    },
-    {
         "titulo": "Step 3c: Configure SSH on S2",
         "instrucoes": [
-            "c. Configure SSH on S2:",
-            "- Admin user - admin",
-            "- Domain name - ccna-ptsa.com",
-            "- RSA key 1024",
-            "- SSH version 2",
-            "- VTY authenticate local (0-15) and SSH only."
+            "1. Create an administrative user in the local user database. ",
+            "- Username: admin",
+            "- Password: admin1pass",
+            "2. Configure the domain name as ccna-ptsa.com",
+            "3. Create an RSA crypto key with a modulus of 1024 bits.",
+            "4. Ensure that more secure version of SSH will be used.",
+            "5. Configure the vty lines to authenticate logins against the local user database.",
+            "6. Configure the vty lines to accept connections over SSH only."
         ],
         "resposta_esperada": """username admin secret admin1pass
 ip domain name ccna-ptsa.com
@@ -223,8 +202,8 @@ exit"""
     {
         "titulo": "Step 4: Configure SVIs on S1",
         "instrucoes": [
-            "a. Configure SVI for Management VLAN 4 on S1: IP 10.19.8.98/29, Description, No shutdown.",
-            "b. Configure Default Gateway on S1: IP 10.19.8.97"
+            "a. Use the information in the Addressing Table to configure SVIs on S1 and S2 for the Management VLAN.",
+            "b. Configure the switch so that the SVI can be reached from other networks over the Management VLAN."
         ],
         "resposta_esperada": """interface vlan 4
 ip address 10.19.8.98 255.255.255.248
@@ -236,8 +215,8 @@ ip default-gateway 10.19.8.97"""
     {
         "titulo": "Step 4: Configure SVIs on S2",
         "instrucoes": [
-            "a. Configure SVI for Management VLAN 4 on S2: IP 10.19.8.99/29, Description, No shutdown.",
-            "b. Configure Default Gateway on S2: IP 10.19.8.97"
+            "a. Use the information in the Addressing Table to configure SVIs on S1 and S2 for the Management VLAN.",
+            "b. Configure the switch so that the SVI can be reached from other networks over the Management VLAN."
         ],
         "resposta_esperada": """interface vlan 4
 ip address 10.19.8.99 255.255.255.248
@@ -249,7 +228,8 @@ ip default-gateway 10.19.8.97"""
     {
         "titulo": "Part 3 Step 1: Configure VLANs and Trunking (S1)",
         "instrucoes": [
-            "On S1: Create VLANs 2-6 with names, Configure trunks on f0/1, f0/2, and f0/5 with native VLAN 6 and allowed VLANs 2-6."
+            "a. Create the VLANs according to the VLAN table.",
+            "b. Create 802.1Q VLAN trunks on ports F0/1 and F0/2. On S1, F0/5 should also be configured as a trunk. Use VLAN 6 as the native VLAN."
         ],
         "resposta_esperada": """vlan 2
 name Bikes
@@ -273,9 +253,10 @@ switchport trunk allowed vlan 2,3,4,5,6
 exit"""
     },
     {
-        "titulo": "Part 3 Step 1: Configure VLANs and Trunking (S2)",
+         "titulo": "Part 3 Step 1: Configure VLANs and Trunking (S2)",
         "instrucoes": [
-            "On S2: Create VLANs 2-6 with names, Configure trunks on f0/1 and f0/2 with native VLAN 6 and allowed VLANs 2-6."
+            "a. Create the VLANs according to the VLAN table.",
+            "b. Create 802.1Q VLAN trunks on ports F0/1 and F0/2. Use VLAN 6 as the native VLAN."
         ],
         "resposta_esperada": """vlan 2
 name Bikes
@@ -296,7 +277,7 @@ exit"""
     {
         "titulo": "Part 3 Step 2: Configure Etherchannel (S1)",
         "instrucoes": [
-            "On S1: Create EtherChannel group 1 using f0/1 and f0/2 in LACP active mode."
+            "Create Layer 2 EtherChannel port group 1 that uses interfaces F0/1 and F0/2 on S1 and S2. Both ends of the channel should negotiate the LACP link."
         ],
         "resposta_esperada": """interface range f0/1-2
 channel-group 1 mode active
@@ -306,7 +287,7 @@ exit"""
     {
         "titulo": "Part 3 Step 2: Configure Etherchannel (S2)",
         "instrucoes": [
-            "On S2: Create EtherChannel group 1 using f0/1 and f0/2 in LACP active mode."
+            "Create Layer 2 EtherChannel port group 1 that uses interfaces F0/1 and F0/2 on S1 and S2. Both ends of the channel should negotiate the LACP link."
         ],
         "resposta_esperada": """interface range f0/1-2
 channel-group 1 mode active
@@ -314,9 +295,12 @@ interface port-channel 1
 exit"""
     },
     {
-        "titulo": "Part 3 Step 3: Configure Switchports (S1)",
+        "titulo": "Part 3 Step 3: Configure Switchports (S2)",
         "instrucoes": [
-            "On S1: Configure f0/6 for access VLAN 2 with port security (max 3), and unused ports to VLAN 5 and shutdown."
+            "a. On S1, configure the port that is connected to the host with static access mode in VLAN 2.",
+            "c. Configure port security on the S1 and S2 active access ports to accept only three learned MAC addresses.",
+            "d. d. Assign all unused switch ports to VLAN 5 on both switches and shut down the ports.",
+            "e. e. Configure a description on the unused ports that is relevant to their status."
         ],
         "resposta_esperada": """interface f0/6
 description host
@@ -333,7 +317,10 @@ shutdown"""
     {
         "titulo": "Part 3 Step 3: Configure Switchports (S2)",
         "instrucoes": [
-            "On S2: Configure f0/18 for access VLAN 3 with port security (max 3), and unused ports to VLAN 5 and shutdown."
+            "b. On S2, configure the port that is connected to the host with static access mode in VLAN 3.",
+            "c. Configure port security on the S1 and S2 active access ports to accept only three learned MAC addresses.",
+            "d. d. Assign all unused switch ports to VLAN 5 on both switches and shut down the ports.",
+            "e. e. Configure a description on the unused ports that is relevant to their status."
         ],
         "resposta_esperada": """interface f0/18
 switchport mode access
@@ -349,8 +336,8 @@ shutdown"""
     {
         "titulo": "Part 4 Step 1: Configure Default Routing on R1",
         "instrucoes": [
-            "a. Configure IPv4 default route using Lo0.",
-            "b. Configure IPv6 default route using Lo0."
+            "a. Configure an IPv4 default route that uses the Lo0 interface as the exit interface.",
+            "b. Configure an IPv6 default route that uses the Lo0 interface as the exit interface."
         ],
         "resposta_esperada": """ip route 0.0.0.0 0.0.0.0 loopback 0
 ipv6 route ::/0 loopback 0"""
@@ -358,7 +345,9 @@ ipv6 route ::/0 loopback 0"""
     {
         "titulo": "Part 4 Step 2: Configure IPv4 DHCP for VLAN 2 (R1)",
         "instrucoes": [
-            "a. Exclude addresses .1 to .52. b. Create pool CCNA-A, network 10.19.8.0/26, gateway .1, domain ccna-a.net."
+            "a. On R1, create a DHCP pool called CCNA-A that consists of the last 10 host addresses in the VLAN 2 subnet only.",
+            "b. Configure the correct default gateway address in the pool.",
+            "c. Configure the domain name of ccna-a.net."
         ],
         "resposta_esperada": """ip dhcp excluded-address 10.19.8.1 10.19.8.52
 ip dhcp pool CCNA-A
@@ -370,7 +359,9 @@ exit"""
     {
         "titulo": "Part 4 Step 3: Configure IPv4 DHCP for VLAN 3 (R1)",
         "instrucoes": [
-            "a. Exclude addresses .65 to .84. b. Create pool CCNA-B, network 10.19.8.64/27, gateway .65, domain ccna-b.net."
+            "a. On R1, create a DHCP pool called CCNA-B that consists of the last 10 host addresses in the VLAN 3 subnet only.",
+            "b. Configure the correct default gateway address in the pool.",
+            "c. Configure the domain name of ccna-b.net."
         ],
         "resposta_esperada": """ip dhcp excluded-address 10.19.8.65 10.19.8.84
 ip dhcp pool CCNA-B
