@@ -24,7 +24,7 @@ desafios = [
         "instrucoes": [
             "a. Configure basic settings.",
             "- Prevent the router from attempting to resolve incorrectly entered commands as domain names.",
-            "- Configure the *R1* hostname.",
+            "- Configure the R1 hostname.",
             "- Configure an appropriate MOTD banner.",
             "(Note: Use the exact text '#Unauthorized Acess is Prohibited#')"
         ],
@@ -406,7 +406,7 @@ def comparar_comandos(user_line, target_line):
             expandido = ABREVIATURAS_CISCO[u_word]
             if t_word.startswith(expandido):
                 continue
-        # 3. Prefixo simples (desde que não seja um único char, exceto se for 'g' ou 'f' que já estão nas abreviaturas)
+        # 3. Prefixo simples
         if len(u_word) >= 2 and t_word.startswith(u_word):
             continue
             
@@ -530,6 +530,32 @@ desafio_atual = desafios[st.session_state.indice_atual]
 col1, col2 = st.columns([1, 1])
 
 with col1:
+    # --- NOVO: Addressing Table em Expander ---
+    with st.expander("📋 Ver Tabela de Endereçamento e VLANs", expanded=False):
+        st.markdown("""
+        **VLAN Table**
+        | VLAN | Name | Interface |
+        |---|---|---|
+        | 2 | Bikes | G0/0/1.2 |
+        | 3 | Trikes | G0/0/1.3 |
+        | 4 | Management | G0/0/1.4 |
+        | 5 | Parking | N/A |
+        | 6 | Native | G0/0/1.6 |
+
+        **Addressing Table**
+        | Device | Interface | IPv4 Address | IPv6 Address | IPv6 Link-Local |
+        |---|---|---|---|---|
+        | **R1** | G0/0/1.2 | 10.19.8.1 /26 | 2001:db8:acad:a::1 /64 | fe80::1 |
+        | | G0/0/1.3 | 10.19.8.65 /27 | 2001:db8:acad:b::1 /64 | fe80::1 |
+        | | G0/0/1.4 | 10.19.8.97 /29 | 2001:db8:acad:c::1 /64 | fe80::1 |
+        | | G0/0/1.6 | N/A | N/A | N/A |
+        | | Lo0 | 209.165.201.1 /27 | 2001:db8:acad:209::1 /64 | fe80::1 |
+        | **S1** | VLAN 4 | 10.19.8.98 /29 | - | - |
+        | **S2** | VLAN 4 | 10.19.8.99 /29 | - | - |
+        | **PC-A** | NIC | DHCP | 2001:db8:acad:a::50 /64 | fe80::1 |
+        | **PC-B** | NIC | DHCP | 2001:db8:acad:b::50 /64 | fe80::1 |
+        """)
+
     st.subheader(f"Tarefa {st.session_state.indice_atual + 1}/{len(desafios)}")
     st.markdown(f"### {desafio_atual['titulo']}")
     
