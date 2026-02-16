@@ -83,7 +83,7 @@ ipv6 address fe80::1 link-local
 exit"""
     },
     {
-        "titulo": "Step 2b: Configure Router Subinterfaces",
+        "titulo": "Step 2b: Configure Router Subinterfaces (g0/0/1.2)",
         "instrucoes": [
             "1. Prepare the router to be configured with IPv6 addresses on its interfaces.",
             "2. Use the information in the Addressing Table and VLAN Table to configure subinterfaces on R1:",
@@ -102,10 +102,10 @@ ipv6 address `2001:db8:acad:a::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
-        "titulo": "Step 2.1b: Configure Router Subinterfaces",
+        "titulo": "Step 2.1b: Configure Router Subinterfaces (g0/0/1.3 and g0/0/1.4)",
         "instrucoes": [
-            "3. Configure subinterface g0/0/1.3:",
-            "4. Configure subinterface g0/0/1.4:"
+            "3. Configure subinterface g0/0/1.3 (Encapsulation, Desc, IPv4 and IPv6)",
+            "4. Configure subinterface g0/0/1.4 (Encapsulation, Desc, IPv4 and IPv6)"
         ],
         "resposta_esperada": """interface g0/0/1.3
 encapsulation dot1Q 3
@@ -121,7 +121,7 @@ ipv6 address `2001:db8:acad:c::1/64`
 ipv6 address fe80::1 link-local"""
     },
     {
-        "titulo": "Step 2.2b: Configure Router Subinterfaces",
+        "titulo": "Step 2.2b: Configure Router Subinterfaces (g0/0/1.6 and g0/0/1)",
         "instrucoes": [
             "5. Configure the native VLAN interface:",
             "6. Enable the physical interface g0/0/1."
