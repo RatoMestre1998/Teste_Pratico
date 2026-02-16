@@ -20,11 +20,11 @@ ABREVIATURAS_CISCO = {
 # ==========================================
 desafios = [
     {
-        "titulo": "Step 1: Configure R1 Basic Settings and Device Hardening (Part A)",
+        "titulo": "Step 1a: Configure R1 Basic Settings and Device Hardening (Part A)",
         "instrucoes": [
             "a. Configure basic settings.",
             "- Prevent the router from attempting to resolve incorrectly entered commands as domain names.",
-            "- Configure the R1 hostname.",
+            "- Configure the *R1* hostname.",
             "- Configure an appropriate MOTD banner.",
             "(Note: Use the exact text '#Unauthorized Acess is Prohibited#')"
         ],
@@ -33,9 +33,9 @@ hostname R1
 banner motd #Unauthorized Acess is Prohibited#"""
     },
     {
-        "titulo": "Step 1: Configure R1 Basic Settings and Device Hardening (Part B)",
+        "titulo": "Step 1b: Configure R1 Basic Settings and Device Hardening",
         "instrucoes": [
-            "b. Configure password security.",
+            "Configure password security.",
             "- Configure the console password and enable connections (password: ciscoconpass).",
             "- Configure an enable secret password (password: ciscoenpass).",
             "- Encrypt all clear text passwords.",
@@ -50,13 +50,13 @@ service password-encryption
 security passwords min-length 10"""
     },
     {
-        "titulo": "Step 1: Configure R1 Basic Settings and Device Hardening (Part C)",
+        "titulo": "Step 1c: Configure R1 Basic Settings and Device Hardening",
         "instrucoes": [
-            "c. Configure SSH.",
-            "1) Create an administrative user in the local user database (user: admin, secret: admin1pass).",
+            "Configure SSH.",
+            "1) Create an administrative user in the local user database (user: admin, Encrypted Password: admin1pass).",
             "2) Configure the domain name as ccna-ptsa.com",
             "3) Create an RSA crypto key with a modulus of 1024 bits.",
-            "4) Ensure that more secure version of SSH will be used (version 2).",
+            "4) Ensure that more secure version of SSH will be used.",
             "5) Configure the vty lines (0-15) to authenticate logins against the local user database.",
             "6) Configure the vty lines to only accept connections over SSH."
         ],
@@ -73,7 +73,7 @@ exit"""
     {
         "titulo": "Step 2a: Configure R1 with a loopback interface",
         "instrucoes": [
-            "Configure the loopback0 with IPv4 and IPv6 addressing:",
+            "Configure R1 with a loopback interface. Configure the loopback0 with IPv4 and IPv6 addressing according to the addressing table.",
             "- Description: Loopback",
             "- IPv4: 209.165.201.1 /27 (255.255.255.224)",
             "- IPv6: 2001:db8:acad:209::1/64",
@@ -87,10 +87,10 @@ ipv6 address fe80::1 link-local
 exit"""
     },
     {
-        "titulo": "Step 2b: Configure Router Subinterfaces (Part 1)",
+        "titulo": "Step 2b: Configure Router Subinterfaces",
         "instrucoes": [
-            "1. Enable IPv6 routing (ipv6 unicast-routing).",
-            "2. Configure subinterface g0/0/1.2 (VLAN 2 - Bikes):",
+            "1. Prepare the router to be configured with IPv6 addresses on its interfaces.",
+            "2. Use the information in the Addressing Table and VLAN Table to configure subinterfaces on R1:",
             "- Encapsulation dot1Q 2",
             "- Description: Bikes",
             "- IPv4: 10.19.8.1 /26 (255.255.255.192)",
